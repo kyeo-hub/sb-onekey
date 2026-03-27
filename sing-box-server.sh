@@ -412,7 +412,7 @@ gen_client_config() {
       "strict_route": true,
       "stack": "mixed",
       "sniff": true,
-      "sniff_override_destination": false
+      "sniff_override_destination": true
     },
     {
       "type": "mixed",
@@ -442,6 +442,7 @@ gen_client_config() {
   "route": {
     "default_domain_resolver": "dns-direct",
     "rules": [
+      { "ip_cidr": ["172.19.0.2/32"], "port": 53, "action": "hijack-dns" },
       { "protocol": "dns", "action": "hijack-dns" },
       { "rule_set": ["geosite-category-ads-all"], "action": "reject" },
       { "rule_set": ["geosite-cn", "geoip-cn", "geosite-private"], "action": "direct" },
@@ -490,7 +491,7 @@ EOF
       "strict_route": true,
       "stack": "mixed",
       "sniff": true,
-      "sniff_override_destination": false
+      "sniff_override_destination": true
     },
     {
       "type": "mixed",
@@ -514,6 +515,7 @@ EOF
   "route": {
     "default_domain_resolver": "dns-direct",
     "rules": [
+      { "ip_cidr": ["172.19.0.2/32"], "port": 53, "action": "hijack-dns" },
       { "protocol": "dns", "action": "hijack-dns" },
       { "rule_set": ["geosite-category-ads-all"], "action": "reject" },
       { "rule_set": ["geosite-cn", "geoip-cn", "geosite-private"], "action": "direct" },
@@ -562,7 +564,7 @@ EOF
       "strict_route": true,
       "stack": "mixed",
       "sniff": true,
-      "sniff_override_destination": false
+      "sniff_override_destination": true
     },
     {
       "type": "mixed",
@@ -588,6 +590,7 @@ EOF
   "route": {
     "default_domain_resolver": "dns-direct",
     "rules": [
+      { "ip_cidr": ["172.19.0.2/32"], "port": 53, "action": "hijack-dns" },
       { "protocol": "dns", "action": "hijack-dns" },
       { "rule_set": ["geosite-category-ads-all"], "action": "reject" },
       { "rule_set": ["geosite-cn", "geoip-cn", "geosite-private"], "action": "direct" },
@@ -636,7 +639,7 @@ EOF
       "strict_route": true,
       "stack": "mixed",
       "sniff": true,
-      "sniff_override_destination": false
+      "sniff_override_destination": true
     },
     {
       "type": "mixed",
@@ -660,6 +663,7 @@ EOF
   "route": {
     "default_domain_resolver": "dns-direct",
     "rules": [
+      { "ip_cidr": ["172.19.0.2/32"], "port": 53, "action": "hijack-dns" },
       { "protocol": "dns", "action": "hijack-dns" },
       { "rule_set": ["geosite-category-ads-all"], "action": "reject" },
       { "rule_set": ["geosite-cn", "geoip-cn", "geosite-private"], "action": "direct" },
