@@ -391,17 +391,43 @@ gen_client_config() {
         vless-reality)
             cat > "${SING_BOX_DIR}/client.json" <<EOF
 {
-  "log": { "level": "info" },
+  "log": { "level": "warn", "timestamp": true },
+  "dns": {
+    "servers": [
+      { "tag": "dns-remote", "address": "https://1.1.1.1/dns-query", "detour": "proxy" },
+      { "tag": "dns-direct", "address": "https://223.5.5.5/dns-query", "detour": "direct" },
+      { "tag": "dns-block", "address": "rcode://success" }
+    ],
+    "rules": [
+      { "geosite": ["category-ads-all", "cn"], "server": "dns-direct" },
+      { "outbound": ["proxy"], "server": "dns-remote" }
+    ],
+    "final": "dns-remote"
+  },
   "inbounds": [
     {
+      "type": "tun",
+      "tag": "tun-in",
+      "interface_name": "sing-box",
+      "inet4_address": "172.19.0.1/30",
+      "auto_route": true,
+      "strict_route": true,
+      "stack": "mixed",
+      "sniff": true,
+      "sniff_override_destination": false
+    },
+    {
       "type": "mixed",
+      "tag": "mixed-in",
       "listen": "127.0.0.1",
-      "listen_port": 1080
+      "listen_port": 1080,
+      "sniff": true
     }
   ],
   "outbounds": [
     {
       "type": "vless",
+      "tag": "proxy",
       "server": "${SERVER_IP}",
       "server_port": ${PORT},
       "uuid": "${UUID}",
@@ -413,14 +439,27 @@ gen_client_config() {
         "reality": { "enabled": true, "public_key": "${REALITY_PUBLIC}", "short_id": "${SHORTID}" }
       }
     },
-    { "type": "direct", "tag": "direct" }
+    { "type": "direct", "tag": "direct" },
+    { "type": "block", "tag": "block" },
+    { "type": "dns", "tag": "dns-out" }
   ],
   "route": {
     "rules": [
-      { "geosite": "cn", "outbound": "direct" },
-      { "geoip": "cn", "outbound": "direct" }
+      { "protocol": "dns", "outbound": "dns-out" },
+      { "geosite": ["category-ads-all", "geolocation-!cn"], "outbound": "block" },
+      { "geosite": ["cn", "private"], "geoip": ["cn", "private"], "outbound": "direct" },
+      { "port": [22, 80, 443, 8080], "outbound": "proxy" },
+      { "protocol": "quic", "outbound": "block" }
     ],
-    "final": "proxy"
+    "final": "proxy",
+    "auto_detect_interface": true
+  },
+  "experimental": {
+    "clash_api": {
+      "external_controller": "127.0.0.1:9090",
+      "secret": "",
+      "default_mode": "rule"
+    }
   }
 }
 EOF
@@ -428,30 +467,69 @@ EOF
         hysteria2)
             cat > "${SING_BOX_DIR}/client.json" <<EOF
 {
-  "log": { "level": "info" },
+  "log": { "level": "warn", "timestamp": true },
+  "dns": {
+    "servers": [
+      { "tag": "dns-remote", "address": "https://1.1.1.1/dns-query", "detour": "proxy" },
+      { "tag": "dns-direct", "address": "https://223.5.5.5/dns-query", "detour": "direct" },
+      { "tag": "dns-block", "address": "rcode://success" }
+    ],
+    "rules": [
+      { "geosite": ["category-ads-all", "cn"], "server": "dns-direct" },
+      { "outbound": ["proxy"], "server": "dns-remote" }
+    ],
+    "final": "dns-remote"
+  },
   "inbounds": [
     {
+      "type": "tun",
+      "tag": "tun-in",
+      "interface_name": "sing-box",
+      "inet4_address": "172.19.0.1/30",
+      "auto_route": true,
+      "strict_route": true,
+      "stack": "mixed",
+      "sniff": true,
+      "sniff_override_destination": false
+    },
+    {
       "type": "mixed",
+      "tag": "mixed-in",
       "listen": "127.0.0.1",
-      "listen_port": 1080
+      "listen_port": 1080,
+      "sniff": true
     }
   ],
   "outbounds": [
     {
       "type": "hysteria2",
+      "tag": "proxy",
       "server": "${SERVER_IP}",
       "server_port": ${PORT},
       "password": "${PASS}",
       "tls": { "enabled": true, "insecure": true }
     },
-    { "type": "direct", "tag": "direct" }
+    { "type": "direct", "tag": "direct" },
+    { "type": "block", "tag": "block" },
+    { "type": "dns", "tag": "dns-out" }
   ],
   "route": {
     "rules": [
-      { "geosite": "cn", "outbound": "direct" },
-      { "geoip": "cn", "outbound": "direct" }
+      { "protocol": "dns", "outbound": "dns-out" },
+      { "geosite": ["category-ads-all", "geolocation-!cn"], "outbound": "block" },
+      { "geosite": ["cn", "private"], "geoip": ["cn", "private"], "outbound": "direct" },
+      { "port": [22, 80, 443, 8080], "outbound": "proxy" },
+      { "protocol": "quic", "outbound": "block" }
     ],
-    "final": "proxy"
+    "final": "proxy",
+    "auto_detect_interface": true
+  },
+  "experimental": {
+    "clash_api": {
+      "external_controller": "127.0.0.1:9090",
+      "secret": "",
+      "default_mode": "rule"
+    }
   }
 }
 EOF
@@ -459,17 +537,43 @@ EOF
         tuic)
             cat > "${SING_BOX_DIR}/client.json" <<EOF
 {
-  "log": { "level": "info" },
+  "log": { "level": "warn", "timestamp": true },
+  "dns": {
+    "servers": [
+      { "tag": "dns-remote", "address": "https://1.1.1.1/dns-query", "detour": "proxy" },
+      { "tag": "dns-direct", "address": "https://223.5.5.5/dns-query", "detour": "direct" },
+      { "tag": "dns-block", "address": "rcode://success" }
+    ],
+    "rules": [
+      { "geosite": ["category-ads-all", "cn"], "server": "dns-direct" },
+      { "outbound": ["proxy"], "server": "dns-remote" }
+    ],
+    "final": "dns-remote"
+  },
   "inbounds": [
     {
+      "type": "tun",
+      "tag": "tun-in",
+      "interface_name": "sing-box",
+      "inet4_address": "172.19.0.1/30",
+      "auto_route": true,
+      "strict_route": true,
+      "stack": "mixed",
+      "sniff": true,
+      "sniff_override_destination": false
+    },
+    {
       "type": "mixed",
+      "tag": "mixed-in",
       "listen": "127.0.0.1",
-      "listen_port": 1080
+      "listen_port": 1080,
+      "sniff": true
     }
   ],
   "outbounds": [
     {
       "type": "tuic",
+      "tag": "proxy",
       "server": "${SERVER_IP}",
       "server_port": ${PORT},
       "uuid": "${UUID}",
@@ -477,14 +581,27 @@ EOF
       "congestion_control": "bbr",
       "tls": { "enabled": true, "alpn": ["h3"], "insecure": true }
     },
-    { "type": "direct", "tag": "direct" }
+    { "type": "direct", "tag": "direct" },
+    { "type": "block", "tag": "block" },
+    { "type": "dns", "tag": "dns-out" }
   ],
   "route": {
     "rules": [
-      { "geosite": "cn", "outbound": "direct" },
-      { "geoip": "cn", "outbound": "direct" }
+      { "protocol": "dns", "outbound": "dns-out" },
+      { "geosite": ["category-ads-all", "geolocation-!cn"], "outbound": "block" },
+      { "geosite": ["cn", "private"], "geoip": ["cn", "private"], "outbound": "direct" },
+      { "port": [22, 80, 443, 8080], "outbound": "proxy" },
+      { "protocol": "quic", "outbound": "block" }
     ],
-    "final": "proxy"
+    "final": "proxy",
+    "auto_detect_interface": true
+  },
+  "experimental": {
+    "clash_api": {
+      "external_controller": "127.0.0.1:9090",
+      "secret": "",
+      "default_mode": "rule"
+    }
   }
 }
 EOF
@@ -492,30 +609,69 @@ EOF
         shadowsocks)
             cat > "${SING_BOX_DIR}/client.json" <<EOF
 {
-  "log": { "level": "info" },
+  "log": { "level": "warn", "timestamp": true },
+  "dns": {
+    "servers": [
+      { "tag": "dns-remote", "address": "https://1.1.1.1/dns-query", "detour": "proxy" },
+      { "tag": "dns-direct", "address": "https://223.5.5.5/dns-query", "detour": "direct" },
+      { "tag": "dns-block", "address": "rcode://success" }
+    ],
+    "rules": [
+      { "geosite": ["category-ads-all", "cn"], "server": "dns-direct" },
+      { "outbound": ["proxy"], "server": "dns-remote" }
+    ],
+    "final": "dns-remote"
+  },
   "inbounds": [
     {
+      "type": "tun",
+      "tag": "tun-in",
+      "interface_name": "sing-box",
+      "inet4_address": "172.19.0.1/30",
+      "auto_route": true,
+      "strict_route": true,
+      "stack": "mixed",
+      "sniff": true,
+      "sniff_override_destination": false
+    },
+    {
       "type": "mixed",
+      "tag": "mixed-in",
       "listen": "127.0.0.1",
-      "listen_port": 1080
+      "listen_port": 1080,
+      "sniff": true
     }
   ],
   "outbounds": [
     {
       "type": "shadowsocks",
+      "tag": "proxy",
       "server": "${SERVER_IP}",
       "server_port": ${PORT},
       "method": "${METHOD}",
       "password": "${SS_KEY}"
     },
-    { "type": "direct", "tag": "direct" }
+    { "type": "direct", "tag": "direct" },
+    { "type": "block", "tag": "block" },
+    { "type": "dns", "tag": "dns-out" }
   ],
   "route": {
     "rules": [
-      { "geosite": "cn", "outbound": "direct" },
-      { "geoip": "cn", "outbound": "direct" }
+      { "protocol": "dns", "outbound": "dns-out" },
+      { "geosite": ["category-ads-all", "geolocation-!cn"], "outbound": "block" },
+      { "geosite": ["cn", "private"], "geoip": ["cn", "private"], "outbound": "direct" },
+      { "port": [22, 80, 443, 8080], "outbound": "proxy" },
+      { "protocol": "quic", "outbound": "block" }
     ],
-    "final": "proxy"
+    "final": "proxy",
+    "auto_detect_interface": true
+  },
+  "experimental": {
+    "clash_api": {
+      "external_controller": "127.0.0.1:9090",
+      "secret": "",
+      "default_mode": "rule"
+    }
   }
 }
 EOF
