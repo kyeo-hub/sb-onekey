@@ -437,17 +437,16 @@ gen_client_config() {
         "reality": { "enabled": true, "public_key": "${REALITY_PUBLIC}", "short_id": "${SHORTID}" }
       }
     },
-    { "type": "direct", "tag": "direct" },
-    { "type": "block", "tag": "block" }
+    { "type": "direct", "tag": "direct" }
   ],
   "route": {
-    "default_domain_resolver": { "server": "dns-direct" },
+    "default_domain_resolver": "dns-direct",
     "rules": [
       { "protocol": "dns", "action": "hijack-dns" },
-      { "rule_set": ["geosite-category-ads-all"], "outbound": "block" },
-      { "rule_set": ["geosite-cn", "geoip-cn", "geosite-private"], "outbound": "direct" },
-      { "port": [22, 80, 443, 8080], "outbound": "proxy" },
-      { "protocol": "quic", "outbound": "block" }
+      { "rule_set": ["geosite-category-ads-all"], "action": "reject" },
+      { "rule_set": ["geosite-cn", "geoip-cn", "geosite-private"], "action": "direct" },
+      { "port": [22, 80, 443, 8080], "action": "route", "outbound": "proxy" },
+      { "protocol": "quic", "action": "reject" }
     ],
     "final": "proxy",
     "auto_detect_interface": true,
@@ -511,17 +510,16 @@ EOF
       "password": "${PASS}",
       "tls": { "enabled": true, "insecure": true }
     },
-    { "type": "direct", "tag": "direct" },
-    { "type": "block", "tag": "block" }
+    { "type": "direct", "tag": "direct" }
   ],
   "route": {
-    "default_domain_resolver": { "server": "dns-direct" },
+    "default_domain_resolver": "dns-direct",
     "rules": [
       { "protocol": "dns", "action": "hijack-dns" },
-      { "rule_set": ["geosite-category-ads-all"], "outbound": "block" },
-      { "rule_set": ["geosite-cn", "geoip-cn", "geosite-private"], "outbound": "direct" },
-      { "port": [22, 80, 443, 8080], "outbound": "proxy" },
-      { "protocol": "quic", "outbound": "block" }
+      { "rule_set": ["geosite-category-ads-all"], "action": "reject" },
+      { "rule_set": ["geosite-cn", "geoip-cn", "geosite-private"], "action": "direct" },
+      { "port": [22, 80, 443, 8080], "action": "route", "outbound": "proxy" },
+      { "protocol": "quic", "action": "reject" }
     ],
     "final": "proxy",
     "auto_detect_interface": true,
@@ -587,17 +585,16 @@ EOF
       "congestion_control": "bbr",
       "tls": { "enabled": true, "alpn": ["h3"], "insecure": true }
     },
-    { "type": "direct", "tag": "direct" },
-    { "type": "block", "tag": "block" }
+    { "type": "direct", "tag": "direct" }
   ],
   "route": {
-    "default_domain_resolver": { "server": "dns-direct" },
+    "default_domain_resolver": "dns-direct",
     "rules": [
       { "protocol": "dns", "action": "hijack-dns" },
-      { "rule_set": ["geosite-category-ads-all"], "outbound": "block" },
-      { "rule_set": ["geosite-cn", "geoip-cn", "geosite-private"], "outbound": "direct" },
-      { "port": [22, 80, 443, 8080], "outbound": "proxy" },
-      { "protocol": "quic", "outbound": "block" }
+      { "rule_set": ["geosite-category-ads-all"], "action": "reject" },
+      { "rule_set": ["geosite-cn", "geoip-cn", "geosite-private"], "action": "direct" },
+      { "port": [22, 80, 443, 8080], "action": "route", "outbound": "proxy" },
+      { "protocol": "quic", "action": "reject" }
     ],
     "final": "proxy",
     "auto_detect_interface": true,
@@ -661,17 +658,16 @@ EOF
       "method": "${METHOD}",
       "password": "${SS_KEY}"
     },
-    { "type": "direct", "tag": "direct" },
-    { "type": "block", "tag": "block" }
+    { "type": "direct", "tag": "direct" }
   ],
   "route": {
-    "default_domain_resolver": { "server": "dns-direct" },
+    "default_domain_resolver": "dns-direct",
     "rules": [
       { "protocol": "dns", "action": "hijack-dns" },
-      { "rule_set": ["geosite-category-ads-all"], "outbound": "block" },
-      { "rule_set": ["geosite-cn", "geoip-cn", "geosite-private"], "outbound": "direct" },
-      { "port": [22, 80, 443, 8080], "outbound": "proxy" },
-      { "protocol": "quic", "outbound": "block" }
+      { "rule_set": ["geosite-category-ads-all"], "action": "reject" },
+      { "rule_set": ["geosite-cn", "geoip-cn", "geosite-private"], "action": "direct" },
+      { "port": [22, 80, 443, 8080], "action": "route", "outbound": "proxy" },
+      { "protocol": "quic", "action": "reject" }
     ],
     "final": "proxy",
     "auto_detect_interface": true,
