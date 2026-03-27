@@ -27,7 +27,7 @@ warn()    { echo -e "${YELLOW}[WARN]${PLAIN} $*"; }
 error()   { echo -e "${RED}[ERROR]${PLAIN} $*"; exit 1; }
 confirm() {
     read -rp "$1 [y/N]: " ans
-    [[ "${ans,,}" == "y" ]]
+    [[ "$(echo "$ans" | tr '[:upper:]' '[:lower:]')" == "y" ]]
 }
 
 check_root() {
@@ -36,7 +36,7 @@ check_root() {
 
 check_os() {
     if [[ -f /etc/os-release ]]; then
-        source /etc/os-release
+        . /etc/os-release
         OS_ID="${ID}"
         OS_VERSION_ID="${VERSION_ID%%.*}"
     else
@@ -488,7 +488,9 @@ do_uninstall() {
 #  入口
 # ──────────────────────────────────────────
 main() {
+    echo "[DEBUG] Script started, args: $*"
     check_root
+    echo "[DEBUG] Root check passed"
 
     # 支持命令行参数直接安装
     case "${1:-}" in
