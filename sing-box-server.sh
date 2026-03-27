@@ -888,7 +888,9 @@ EOF
 
     systemctl daemon-reload
     systemctl enable sing-box-sub
-    systemctl restart sing-box-sub
+    
+    # 默认不启动订阅服务，需要时手动开启
+    systemctl stop sing-box-sub 2>/dev/null || true
     
     # 开放 8080 端口
     if command -v ufw &>/dev/null && ufw status | grep -q "active"; then
@@ -900,10 +902,26 @@ EOF
     fi
     iptables -I INPUT -p tcp --dport 8080 -j ACCEPT 2>/dev/null
     
-    info "订阅服务已启动"
+    info "订阅服务已配置（默认关闭）"
     echo -e "${CYAN}"
-    cat "${SING_BOX_DIR}/sub_info.txt"
+    echo "========================================"
+    echo "         客户端配置导入方式"
+    echo "========================================"
+    echo ""
+    echo "【方式1】手动复制配置（推荐）"
+    echo "scp root@${SERVER_IP}:/etc/sing-box/client.json ./"
+    echo ""
+    echo "【方式2】开启订阅服务（临时）"
+    echo "运行脚本，选择菜单选项 11 开启"
+    echo "开启后可以使用二维码或订阅链接导入"
+    echo "导入完成后记得选择选项 12 关闭"
+    echo ""
+    echo "【方式3】查看二维码文本"
+    echo "cat /etc/sing-box/sub_qr.txt"
+    echo ""
+    echo "========================================"
     echo -e "${PLAIN}"
+    warn "为保护配置安全，订阅服务默认关闭，需要时手动开启"
 }
 
 # ──────────────────────────────────────────
@@ -947,6 +965,12 @@ enable_bbr() {
 #  主菜单
 # ──────────────────────────────────────────
 show_menu() {
+    # 检查订阅服务状态
+    local sub_status="${RED}已关闭${PLAIN}"
+    if systemctl is-active --quiet sing-box-sub 2>/dev/null; then
+        sub_status="${GREEN}运行中${PLAIN}"
+    fi
+    
     echo -e "\n${BLUE}╔══════════════════════════════════════════╗${PLAIN}"
     echo -e "${BLUE}║     sing-box 服务端一键管理脚本          ║${PLAIN}"
     echo -e "${BLUE}╠══════════════════════════════════════════╣${PLAIN}"
@@ -962,9 +986,12 @@ show_menu() {
     echo -e "${BLUE}║  ${YELLOW}9.${PLAIN} 更新 sing-box 到最新版              ${BLUE}║${PLAIN}"
     echo -e "${BLUE}║  ${CYAN}10.${PLAIN} 查看订阅访问日志                   ${BLUE}║${PLAIN}"
     echo -e "${BLUE}╠══════════════════════════════════════════╣${PLAIN}"
+    echo -e "${BLUE}║  ${GREEN}11.${PLAIN} 开启订阅服务 (${sub_status})          ${BLUE}║${PLAIN}"
+    echo -e "${BLUE}║  ${RED}12.${PLAIN} 关闭订阅服务                        ${BLUE}║${PLAIN}"
+    echo -e "${BLUE}╠══════════════════════════════════════════╣${PLAIN}"
     echo -e "${BLUE}║  ${RED}0.${PLAIN} 卸载 sing-box                       ${BLUE}║${PLAIN}"
     echo -e "${BLUE}╚══════════════════════════════════════════╝${PLAIN}"
-    echo -ne "  请输入选项 [0-9]: "
+    echo -ne "  请输入选项 [0-12]: "
 }
 
 do_install() {
@@ -1004,13 +1031,46 @@ do_install() {
     fi
 }
 
+# ──────────────────────────────────────────
+#  订阅服务开关
+# ──────────────────────────────────────────
+start_sub_service() {
+    if [[ ! -f "${SING_BOX_DIR}/sub-server.py" ]]; then
+        error "未找到订阅服务，请先安装 sing-box"
+        return
+    fi
+    
+    systemctl start sing-box-sub 2>/dev/null
+    if systemctl is-active --quiet sing-box-sub; then
+        info "订阅服务已开启"
+        echo -e "${CYAN}"
+        cat "${SING_BOX_DIR}/sub_info.txt" 2>/dev/null || echo "订阅信息: ${SING_BOX_DIR}/sub_info.txt"
+        echo -e "${PLAIN}"
+        warn "配置导入完成后，建议使用菜单选项 12 关闭订阅服务"
+    else
+        error "订阅服务启动失败"
+    fi
+}
+
+stop_sub_service() {
+    systemctl stop sing-box-sub 2>/dev/null
+    if ! systemctl is-active --quiet sing-box-sub 2>/dev/null; then
+        info "订阅服务已关闭"
+        echo -e "${GREEN}✓ 订阅服务已安全关闭，配置不再暴露${PLAIN}"
+    else
+        error "订阅服务关闭失败"
+    fi
+}
+
 do_uninstall() {
     if ! confirm "确认卸载 sing-box？配置将全部删除"; then
         return
     fi
     systemctl stop sing-box 2>/dev/null || true
+    systemctl stop sing-box-sub 2>/dev/null || true
     systemctl disable sing-box 2>/dev/null || true
-    rm -f "${SING_BOX_BIN}" "${SING_BOX_SERVICE}"
+    systemctl disable sing-box-sub 2>/dev/null || true
+    rm -f "${SING_BOX_BIN}" "${SING_BOX_SERVICE}" /etc/systemd/system/sing-box-sub.service
     rm -rf "${SING_BOX_DIR}"
     systemctl daemon-reload
     info "sing-box 已卸载完毕"
@@ -1030,6 +1090,8 @@ main() {
         hy2|hysteria2) do_install config_hysteria2 udp; exit 0 ;;
         tuic)          do_install config_tuic udp; exit 0 ;;
         ss|shadowsocks) do_install config_shadowsocks tcp; exit 0 ;;
+        sub-on|start)  start_sub_service; exit 0 ;;
+        sub-off|stop)  stop_sub_service; exit 0 ;;
     esac
 
     while true; do
@@ -1067,6 +1129,8 @@ main() {
                     warn "暂无访问日志"
                 fi
                 ;;
+            11) start_sub_service ;;
+            12) stop_sub_service ;;
             0) do_uninstall ;;
             *) warn "无效选项" ;;
         esac

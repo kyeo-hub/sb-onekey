@@ -39,6 +39,16 @@ bash <(curl -fsSL https://raw.githubusercontent.com/kyeo-hub/sb-onekey/main/sing
 bash <(curl -fsSL https://raw.githubusercontent.com/kyeo-hub/sb-onekey/main/sing-box-server.sh) ss
 ```
 
+### 订阅服务快捷开关
+
+```bash
+# 开启订阅服务（显示二维码和订阅链接）
+bash <(curl -fsSL https://raw.githubusercontent.com/kyeo-hub/sb-onekey/main/sing-box-server.sh) sub-on
+
+# 关闭订阅服务
+bash <(curl -fsSL https://raw.githubusercontent.com/kyeo-hub/sb-onekey/main/sing-box-server.sh) sub-off
+```
+
 ### 方式二：先下载再运行
 
 ```bash
@@ -114,39 +124,51 @@ cat /etc/sing-box/node_info.txt
 
 安装完成后，服务器会生成客户端配置文件并提供订阅链接。
 
-### 方式一：订阅链接 / 二维码（推荐）
+### 配置导入方式
 
-安装完成后会显示订阅链接和二维码：
+#### 方式一：手动复制（最安全，推荐）
 
+```bash
+# 在本地电脑执行
+scp root@你的服务器IP:/etc/sing-box/client.json ./
+```
+
+#### 方式二：订阅服务（临时开启）
+
+为保护配置安全，订阅服务**默认关闭**，需要时手动开启：
+
+```bash
+# 1. 运行脚本
+bash <(curl -fsSL https://raw.githubusercontent.com/kyeo-hub/sb-onekey/main/sing-box-server.sh)
+
+# 2. 选择菜单选项 11 - 开启订阅服务
+# 3. 使用二维码或订阅链接导入配置
+# 4. 导入完成后，选择选项 12 - 关闭订阅服务
+```
+
+**安卓手机扫码导入：**
+1. 开启订阅服务后，终端会显示二维码
+2. 打开安卓 sing-box 客户端
+3. 点击右上角 "+" → "扫描二维码"
+4. 扫描终端显示的二维码导入
+5. **导入完成后立即关闭订阅服务**
+
+**订阅链接格式：**
 ```
 http://你的服务器IP:8080/xxxxxxxxxxxxxxxx
 ```
 
-**安卓手机扫码导入：**
-1. 打开安卓 sing-box 客户端
-2. 点击右上角 "+" 或 "添加配置"
-3. 选择 "扫描二维码"
-4. 扫描终端显示的二维码即可自动导入
+#### 方式三：查看二维码文本（无需开启服务）
 
-**其他方式：**
-- **sing-box GUI 客户端**：直接粘贴订阅链接
-- **浏览器访问**：下载 `client.json` 配置文件
-- **curl 下载**：
-  ```bash
-  curl -o client.json http://你的服务器IP:8080/xxxxxxxxxxxxxxxx
-  ```
-
-**二维码下载：**
 ```bash
-# 下载二维码图片
-wget http://你的服务器IP:8080/xxxxxxxxxxxxxxxx/qr.png
+# 在服务器上查看文本二维码
+cat /etc/sing-box/sub_qr.txt
 ```
 
-**安全特性：**
-- ✅ 随机 Token（32位十六进制）
-- ✅ 访问频率限制（每分钟30次）
-- ✅ IP 封禁机制（超过限制封禁5分钟）
-- ✅ 访问日志记录
+**安全建议：**
+- ✅ 配置导入完成后立即关闭订阅服务
+- ✅ 订阅服务开启期间配置可能被扫描到
+- ✅ 使用 scp 手动复制是最安全的方式
 
 ### 方式二：手动复制配置
 
