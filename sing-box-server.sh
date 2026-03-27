@@ -445,16 +445,15 @@ gen_client_config() {
       { "protocol": "dns", "action": "hijack-dns" },
       { "rule_set": ["geosite-category-ads-all"], "action": "reject" },
       { "rule_set": ["geosite-cn", "geoip-cn", "geosite-private"], "action": "direct" },
-      { "port": [22, 80, 443, 8080], "action": "route", "outbound": "proxy" },
       { "protocol": "quic", "action": "reject" }
     ],
     "final": "proxy",
     "auto_detect_interface": true,
     "rule_set": [
-      { "tag": "geosite-cn", "type": "remote", "format": "binary", "url": "https://fastly.jsdelivr.net/gh/SagerNet/sing-geosite@rule-set/geosite-cn.srs", "download_detour": "proxy" },
-      { "tag": "geosite-category-ads-all", "type": "remote", "format": "binary", "url": "https://fastly.jsdelivr.net/gh/SagerNet/sing-geosite@rule-set/geosite-category-ads-all.srs", "download_detour": "proxy" },
-      { "tag": "geoip-cn", "type": "remote", "format": "binary", "url": "https://fastly.jsdelivr.net/gh/SagerNet/sing-geoip@rule-set/geoip-cn.srs", "download_detour": "proxy" },
-      { "tag": "geosite-private", "type": "remote", "format": "binary", "url": "https://fastly.jsdelivr.net/gh/SagerNet/sing-geosite@rule-set/geosite-private.srs", "download_detour": "proxy" }
+      { "tag": "geosite-cn", "type": "remote", "format": "binary", "url": "https://fastly.jsdelivr.net/gh/SagerNet/sing-geosite@rule-set/geosite-cn.srs", "download_detour": "direct" },
+      { "tag": "geosite-category-ads-all", "type": "remote", "format": "binary", "url": "https://fastly.jsdelivr.net/gh/SagerNet/sing-geosite@rule-set/geosite-category-ads-all.srs", "download_detour": "direct" },
+      { "tag": "geoip-cn", "type": "remote", "format": "binary", "url": "https://fastly.jsdelivr.net/gh/SagerNet/sing-geoip@rule-set/geoip-cn.srs", "download_detour": "direct" },
+      { "tag": "geosite-private", "type": "remote", "format": "binary", "url": "https://fastly.jsdelivr.net/gh/SagerNet/sing-geosite@rule-set/geosite-private.srs", "download_detour": "direct" }
     ]
   },
   "experimental": {
@@ -518,16 +517,15 @@ EOF
       { "protocol": "dns", "action": "hijack-dns" },
       { "rule_set": ["geosite-category-ads-all"], "action": "reject" },
       { "rule_set": ["geosite-cn", "geoip-cn", "geosite-private"], "action": "direct" },
-      { "port": [22, 80, 443, 8080], "action": "route", "outbound": "proxy" },
       { "protocol": "quic", "action": "reject" }
     ],
     "final": "proxy",
     "auto_detect_interface": true,
     "rule_set": [
-      { "tag": "geosite-cn", "type": "remote", "format": "binary", "url": "https://fastly.jsdelivr.net/gh/SagerNet/sing-geosite@rule-set/geosite-cn.srs", "download_detour": "proxy" },
-      { "tag": "geosite-category-ads-all", "type": "remote", "format": "binary", "url": "https://fastly.jsdelivr.net/gh/SagerNet/sing-geosite@rule-set/geosite-category-ads-all.srs", "download_detour": "proxy" },
-      { "tag": "geoip-cn", "type": "remote", "format": "binary", "url": "https://fastly.jsdelivr.net/gh/SagerNet/sing-geoip@rule-set/geoip-cn.srs", "download_detour": "proxy" },
-      { "tag": "geosite-private", "type": "remote", "format": "binary", "url": "https://fastly.jsdelivr.net/gh/SagerNet/sing-geosite@rule-set/geosite-private.srs", "download_detour": "proxy" }
+      { "tag": "geosite-cn", "type": "remote", "format": "binary", "url": "https://fastly.jsdelivr.net/gh/SagerNet/sing-geosite@rule-set/geosite-cn.srs", "download_detour": "direct" },
+      { "tag": "geosite-category-ads-all", "type": "remote", "format": "binary", "url": "https://fastly.jsdelivr.net/gh/SagerNet/sing-geosite@rule-set/geosite-category-ads-all.srs", "download_detour": "direct" },
+      { "tag": "geoip-cn", "type": "remote", "format": "binary", "url": "https://fastly.jsdelivr.net/gh/SagerNet/sing-geoip@rule-set/geoip-cn.srs", "download_detour": "direct" },
+      { "tag": "geosite-private", "type": "remote", "format": "binary", "url": "https://fastly.jsdelivr.net/gh/SagerNet/sing-geosite@rule-set/geosite-private.srs", "download_detour": "direct" }
     ]
   },
   "experimental": {
@@ -593,16 +591,15 @@ EOF
       { "protocol": "dns", "action": "hijack-dns" },
       { "rule_set": ["geosite-category-ads-all"], "action": "reject" },
       { "rule_set": ["geosite-cn", "geoip-cn", "geosite-private"], "action": "direct" },
-      { "port": [22, 80, 443, 8080], "action": "route", "outbound": "proxy" },
       { "protocol": "quic", "action": "reject" }
     ],
     "final": "proxy",
     "auto_detect_interface": true,
     "rule_set": [
-      { "tag": "geosite-cn", "type": "remote", "format": "binary", "url": "https://fastly.jsdelivr.net/gh/SagerNet/sing-geosite@rule-set/geosite-cn.srs", "download_detour": "proxy" },
-      { "tag": "geosite-category-ads-all", "type": "remote", "format": "binary", "url": "https://fastly.jsdelivr.net/gh/SagerNet/sing-geosite@rule-set/geosite-category-ads-all.srs", "download_detour": "proxy" },
-      { "tag": "geoip-cn", "type": "remote", "format": "binary", "url": "https://fastly.jsdelivr.net/gh/SagerNet/sing-geoip@rule-set/geoip-cn.srs", "download_detour": "proxy" },
-      { "tag": "geosite-private", "type": "remote", "format": "binary", "url": "https://fastly.jsdelivr.net/gh/SagerNet/sing-geosite@rule-set/geosite-private.srs", "download_detour": "proxy" }
+      { "tag": "geosite-cn", "type": "remote", "format": "binary", "url": "https://fastly.jsdelivr.net/gh/SagerNet/sing-geosite@rule-set/geosite-cn.srs", "download_detour": "direct" },
+      { "tag": "geosite-category-ads-all", "type": "remote", "format": "binary", "url": "https://fastly.jsdelivr.net/gh/SagerNet/sing-geosite@rule-set/geosite-category-ads-all.srs", "download_detour": "direct" },
+      { "tag": "geoip-cn", "type": "remote", "format": "binary", "url": "https://fastly.jsdelivr.net/gh/SagerNet/sing-geoip@rule-set/geoip-cn.srs", "download_detour": "direct" },
+      { "tag": "geosite-private", "type": "remote", "format": "binary", "url": "https://fastly.jsdelivr.net/gh/SagerNet/sing-geosite@rule-set/geosite-private.srs", "download_detour": "direct" }
     ]
   },
   "experimental": {
@@ -666,16 +663,15 @@ EOF
       { "protocol": "dns", "action": "hijack-dns" },
       { "rule_set": ["geosite-category-ads-all"], "action": "reject" },
       { "rule_set": ["geosite-cn", "geoip-cn", "geosite-private"], "action": "direct" },
-      { "port": [22, 80, 443, 8080], "action": "route", "outbound": "proxy" },
       { "protocol": "quic", "action": "reject" }
     ],
     "final": "proxy",
     "auto_detect_interface": true,
     "rule_set": [
-      { "tag": "geosite-cn", "type": "remote", "format": "binary", "url": "https://fastly.jsdelivr.net/gh/SagerNet/sing-geosite@rule-set/geosite-cn.srs", "download_detour": "proxy" },
-      { "tag": "geosite-category-ads-all", "type": "remote", "format": "binary", "url": "https://fastly.jsdelivr.net/gh/SagerNet/sing-geosite@rule-set/geosite-category-ads-all.srs", "download_detour": "proxy" },
-      { "tag": "geoip-cn", "type": "remote", "format": "binary", "url": "https://fastly.jsdelivr.net/gh/SagerNet/sing-geoip@rule-set/geoip-cn.srs", "download_detour": "proxy" },
-      { "tag": "geosite-private", "type": "remote", "format": "binary", "url": "https://fastly.jsdelivr.net/gh/SagerNet/sing-geosite@rule-set/geosite-private.srs", "download_detour": "proxy" }
+      { "tag": "geosite-cn", "type": "remote", "format": "binary", "url": "https://fastly.jsdelivr.net/gh/SagerNet/sing-geosite@rule-set/geosite-cn.srs", "download_detour": "direct" },
+      { "tag": "geosite-category-ads-all", "type": "remote", "format": "binary", "url": "https://fastly.jsdelivr.net/gh/SagerNet/sing-geosite@rule-set/geosite-category-ads-all.srs", "download_detour": "direct" },
+      { "tag": "geoip-cn", "type": "remote", "format": "binary", "url": "https://fastly.jsdelivr.net/gh/SagerNet/sing-geoip@rule-set/geoip-cn.srs", "download_detour": "direct" },
+      { "tag": "geosite-private", "type": "remote", "format": "binary", "url": "https://fastly.jsdelivr.net/gh/SagerNet/sing-geosite@rule-set/geosite-private.srs", "download_detour": "direct" }
     ]
   },
   "experimental": {
