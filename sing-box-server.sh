@@ -400,7 +400,7 @@ gen_client_config() {
     "rules": [
       { "rule_set": ["geosite-cn", "geosite-category-ads-all"], "action": "route", "server": "dns-direct" }
     ],
-    "strategy": "prefer_ipv4",
+    "strategy": "ipv4_only",
     "final": "dns-remote"
   },
   "inbounds": [
@@ -408,7 +408,7 @@ gen_client_config() {
       "type": "tun",
       "tag": "tun-in",
       "interface_name": "sing-box",
-      "address": ["172.19.0.1/30"],
+      "address": ["172.19.0.1/30", "fdfe:dcba:9876::1/126"],
       "auto_route": true,
       "strict_route": true,
       "stack": "mixed",
@@ -443,7 +443,6 @@ gen_client_config() {
   "route": {
     "default_domain_resolver": "dns-direct",
     "rules": [
-      { "ip_cidr": ["172.19.0.2/32"], "port": 53, "action": "hijack-dns" },
       { "protocol": "dns", "action": "hijack-dns" },
       { "rule_set": ["geosite-category-ads-all"], "action": "reject" },
       { "ip_is_private": true, "action": "direct" },
@@ -481,7 +480,7 @@ EOF
     "rules": [
       { "rule_set": ["geosite-cn", "geosite-category-ads-all"], "action": "route", "server": "dns-direct" }
     ],
-    "strategy": "prefer_ipv4",
+    "strategy": "ipv4_only",
     "final": "dns-remote"
   },
   "inbounds": [
@@ -489,7 +488,7 @@ EOF
       "type": "tun",
       "tag": "tun-in",
       "interface_name": "sing-box",
-      "address": ["172.19.0.1/30"],
+      "address": ["172.19.0.1/30", "fdfe:dcba:9876::1/126"],
       "auto_route": true,
       "strict_route": true,
       "stack": "mixed",
@@ -518,7 +517,6 @@ EOF
   "route": {
     "default_domain_resolver": "dns-direct",
     "rules": [
-      { "ip_cidr": ["172.19.0.2/32"], "port": 53, "action": "hijack-dns" },
       { "protocol": "dns", "action": "hijack-dns" },
       { "rule_set": ["geosite-category-ads-all"], "action": "reject" },
       { "ip_is_private": true, "action": "direct" },
@@ -556,7 +554,7 @@ EOF
     "rules": [
       { "rule_set": ["geosite-cn", "geosite-category-ads-all"], "action": "route", "server": "dns-direct" }
     ],
-    "strategy": "prefer_ipv4",
+    "strategy": "ipv4_only",
     "final": "dns-remote"
   },
   "inbounds": [
@@ -564,7 +562,7 @@ EOF
       "type": "tun",
       "tag": "tun-in",
       "interface_name": "sing-box",
-      "address": ["172.19.0.1/30"],
+      "address": ["172.19.0.1/30", "fdfe:dcba:9876::1/126"],
       "auto_route": true,
       "strict_route": true,
       "stack": "mixed",
@@ -595,7 +593,6 @@ EOF
   "route": {
     "default_domain_resolver": "dns-direct",
     "rules": [
-      { "ip_cidr": ["172.19.0.2/32"], "port": 53, "action": "hijack-dns" },
       { "protocol": "dns", "action": "hijack-dns" },
       { "rule_set": ["geosite-category-ads-all"], "action": "reject" },
       { "ip_is_private": true, "action": "direct" },
@@ -633,7 +630,7 @@ EOF
     "rules": [
       { "rule_set": ["geosite-cn", "geosite-category-ads-all"], "action": "route", "server": "dns-direct" }
     ],
-    "strategy": "prefer_ipv4",
+    "strategy": "ipv4_only",
     "final": "dns-remote"
   },
   "inbounds": [
@@ -641,7 +638,7 @@ EOF
       "type": "tun",
       "tag": "tun-in",
       "interface_name": "sing-box",
-      "address": ["172.19.0.1/30"],
+      "address": ["172.19.0.1/30", "fdfe:dcba:9876::1/126"],
       "auto_route": true,
       "strict_route": true,
       "stack": "mixed",
@@ -670,7 +667,6 @@ EOF
   "route": {
     "default_domain_resolver": "dns-direct",
     "rules": [
-      { "ip_cidr": ["172.19.0.2/32"], "port": 53, "action": "hijack-dns" },
       { "protocol": "dns", "action": "hijack-dns" },
       { "rule_set": ["geosite-category-ads-all"], "action": "reject" },
       { "ip_is_private": true, "action": "direct" },
