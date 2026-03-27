@@ -155,8 +155,10 @@ bash <(curl -fsSL https://raw.githubusercontent.com/kyeo-hub/sb-onekey/main/sing
 
 **订阅链接格式：**
 ```
-http://你的服务器IP:8080/xxxxxxxxxxxxxxxx
+sing-box://import-remote-profile?url=http%3A%2F%2F服务器IP%3A8080%2Fxxxxxxxxxxxxxxxx%2Fclient.json#sb-onekey
 ```
+
+**注意**：安卓客户端需要使用 `sing-box://` 格式的订阅链接，脚本已自动生成正确的格式。
 
 #### 方式三：查看二维码文本（无需开启服务）
 

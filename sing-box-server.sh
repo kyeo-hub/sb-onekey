@@ -696,8 +696,15 @@ gen_subscription_info() {
         apt-get install -y -qq qrencode 2>/dev/null || yum install -y -q qrencode 2>/dev/null || true
     fi
     
-    # 生成二维码
-    SUB_URL="http://${SERVER_IP}:8080/${SUB_TOKEN}"
+    # 生成 sing-box 订阅链接格式
+    # sing-box 订阅格式: sing-box://import-remote-profile?url=<encoded_url>#<name>
+    SUB_HTTP_URL="http://${SERVER_IP}:8080/${SUB_TOKEN}/client.json"
+    SUB_URL_ENCODED=$(echo -n "${SUB_HTTP_URL}" | python3 -c "import sys,urllib.parse;print(urllib.parse.quote(sys.stdin.read().strip()))" 2>/dev/null || echo "${SUB_HTTP_URL}")
+    SUB_URL="sing-box://import-remote-profile?url=${SUB_URL_ENCODED}#sb-onekey"
+    
+    # 同时生成普通 HTTP 链接（用于浏览器下载）
+    SUB_HTTP_ONLY="http://${SERVER_IP}:8080/${SUB_TOKEN}"
+    
     if command -v qrencode &>/dev/null; then
         echo "${SUB_URL}" | qrencode -t ANSIUTF8 -o "${SING_BOX_DIR}/sub_qr.txt"
         echo "${SUB_URL}" | qrencode -o "${SING_BOX_DIR}/sub_qr.png" 2>/dev/null || true
@@ -709,14 +716,14 @@ gen_subscription_info() {
          客户端订阅信息
 ========================================
 
-【订阅链接】
+【sing-box 订阅链接】（安卓客户端使用）
 ${SUB_URL}
 
-【配置文件直链】
-http://${SERVER_IP}:8080/${SUB_TOKEN}/client.json
+【配置文件直链】（浏览器下载）
+${SUB_HTTP_URL}
 
 【二维码导入】
-安卓手机可直接扫描下方二维码导入：
+安卓 sing-box 客户端可直接扫描二维码导入
 
 EOF
 
@@ -803,8 +810,24 @@ class SubHandler(http.server.SimpleHTTPRequestHandler):
             log_access(client_ip, self.path, "429")
             return
         
-        # 订阅链接 /token
+        # 订阅链接 /token - 返回配置文件
         if self.path == f"/{TOKEN}" or self.path == f"/{TOKEN}/":
+            self.send_response(200)
+            self.send_header('Content-type', 'application/json')
+            self.send_header('Cache-Control', 'no-cache')
+            self.send_header('X-RateLimit-Limit', str(MAX_REQUESTS_PER_MIN))
+            self.end_headers()
+            try:
+                with open(f"{CONFIG_DIR}/client.json", "rb") as f:
+                    self.wfile.write(f.read())
+                log_access(client_ip, self.path, "200")
+            except:
+                self.wfile.write(b'{"error": "config not found"}')
+                log_access(client_ip, self.path, "404")
+            return
+        
+        # 处理 sing-box 订阅格式 /token/client.json
+        if self.path == f"/{TOKEN}/client.json":
             self.send_response(200)
             self.send_header('Content-type', 'application/json')
             self.send_header('Cache-Control', 'no-cache')
