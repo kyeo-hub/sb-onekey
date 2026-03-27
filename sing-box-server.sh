@@ -210,6 +210,7 @@ EOF
     echo -e "${CYAN}═══════════════════════════════════════════════${PLAIN}\n"
 
     save_node_info "VLESS-REALITY" "${SHARE_LINK}"
+    gen_client_config "vless-reality"
 }
 
 ## 2. Hysteria2
@@ -262,6 +263,7 @@ EOF
     echo -e "${CYAN}════════════════════════════════════════════${PLAIN}\n"
 
     save_node_info "Hysteria2" "${SHARE_LINK}"
+    gen_client_config "hysteria2"
 }
 
 ## 3. TUIC v5
@@ -317,6 +319,7 @@ EOF
     echo -e "${CYAN}══════════════════════════════════════════${PLAIN}\n"
 
     save_node_info "TUIC" "${SHARE_LINK}"
+    gen_client_config "tuic"
 }
 
 ## 4. Shadowsocks (2022)
@@ -357,6 +360,7 @@ EOF
     echo -e "${CYAN}═══════════════════════════════════════════════════${PLAIN}\n"
 
     save_node_info "Shadowsocks-2022" "${SHARE_LINK}"
+    gen_client_config "shadowsocks"
 }
 
 # ──────────────────────────────────────────
@@ -371,8 +375,154 @@ save_node_info() {
 
 分享链接:
 ${link}
+
+客户端配置文件: ${SING_BOX_DIR}/client.json
 EOF
     info "节点信息已保存至 ${SING_BOX_DIR}/node_info.txt"
+}
+
+# ──────────────────────────────────────────
+#  生成 sing-box 客户端配置
+# ──────────────────────────────────────────
+gen_client_config() {
+    local proto="$1"
+    
+    case "${proto}" in
+        vless-reality)
+            cat > "${SING_BOX_DIR}/client.json" <<EOF
+{
+  "log": { "level": "info" },
+  "inbounds": [
+    {
+      "type": "mixed",
+      "listen": "127.0.0.1",
+      "listen_port": 1080
+    }
+  ],
+  "outbounds": [
+    {
+      "type": "vless",
+      "server": "${SERVER_IP}",
+      "server_port": ${PORT},
+      "uuid": "${UUID}",
+      "flow": "xtls-rprx-vision",
+      "tls": {
+        "enabled": true,
+        "server_name": "${SNI}",
+        "utls": { "enabled": true, "fingerprint": "chrome" },
+        "reality": { "enabled": true, "public_key": "${REALITY_PUBLIC}", "short_id": "${SHORTID}" }
+      }
+    },
+    { "type": "direct", "tag": "direct" }
+  ],
+  "route": {
+    "rules": [
+      { "geosite": "cn", "outbound": "direct" },
+      { "geoip": "cn", "outbound": "direct" }
+    ],
+    "final": "proxy"
+  }
+}
+EOF
+            ;;
+        hysteria2)
+            cat > "${SING_BOX_DIR}/client.json" <<EOF
+{
+  "log": { "level": "info" },
+  "inbounds": [
+    {
+      "type": "mixed",
+      "listen": "127.0.0.1",
+      "listen_port": 1080
+    }
+  ],
+  "outbounds": [
+    {
+      "type": "hysteria2",
+      "server": "${SERVER_IP}",
+      "server_port": ${PORT},
+      "password": "${PASS}",
+      "tls": { "enabled": true, "insecure": true }
+    },
+    { "type": "direct", "tag": "direct" }
+  ],
+  "route": {
+    "rules": [
+      { "geosite": "cn", "outbound": "direct" },
+      { "geoip": "cn", "outbound": "direct" }
+    ],
+    "final": "proxy"
+  }
+}
+EOF
+            ;;
+        tuic)
+            cat > "${SING_BOX_DIR}/client.json" <<EOF
+{
+  "log": { "level": "info" },
+  "inbounds": [
+    {
+      "type": "mixed",
+      "listen": "127.0.0.1",
+      "listen_port": 1080
+    }
+  ],
+  "outbounds": [
+    {
+      "type": "tuic",
+      "server": "${SERVER_IP}",
+      "server_port": ${PORT},
+      "uuid": "${UUID}",
+      "password": "${PASS}",
+      "congestion_control": "bbr",
+      "tls": { "enabled": true, "alpn": ["h3"], "insecure": true }
+    },
+    { "type": "direct", "tag": "direct" }
+  ],
+  "route": {
+    "rules": [
+      { "geosite": "cn", "outbound": "direct" },
+      { "geoip": "cn", "outbound": "direct" }
+    ],
+    "final": "proxy"
+  }
+}
+EOF
+            ;;
+        shadowsocks)
+            cat > "${SING_BOX_DIR}/client.json" <<EOF
+{
+  "log": { "level": "info" },
+  "inbounds": [
+    {
+      "type": "mixed",
+      "listen": "127.0.0.1",
+      "listen_port": 1080
+    }
+  ],
+  "outbounds": [
+    {
+      "type": "shadowsocks",
+      "server": "${SERVER_IP}",
+      "server_port": ${PORT},
+      "method": "${METHOD}",
+      "password": "${SS_KEY}"
+    },
+    { "type": "direct", "tag": "direct" }
+  ],
+  "route": {
+    "rules": [
+      { "geosite": "cn", "outbound": "direct" },
+      { "geoip": "cn", "outbound": "direct" }
+    ],
+    "final": "proxy"
+  }
+}
+EOF
+            ;;
+    esac
+    
+    info "客户端配置已保存至 ${SING_BOX_DIR}/client.json"
 }
 
 # ──────────────────────────────────────────

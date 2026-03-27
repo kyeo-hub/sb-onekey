@@ -91,12 +91,43 @@ cat /etc/sing-box/node_info.txt
 
 ```
 /etc/sing-box/
-├── config.json          # 主配置文件
+├── config.json          # 服务端配置文件
+├── client.json          # 客户端配置文件（可直接使用）
 ├── node_info.txt        # 节点信息（含分享链接）
 └── tls/                 # TLS 证书目录（Hysteria2/TUIC）
     ├── cert.pem
     └── key.pem
 ```
+
+## 客户端使用
+
+安装完成后，服务器会生成客户端配置文件 `/etc/sing-box/client.json`。
+
+### 获取客户端配置
+
+```bash
+# 查看客户端配置内容
+cat /etc/sing-box/client.json
+
+# 复制到本地（在本地终端执行）
+scp root@你的服务器IP:/etc/sing-box/client.json ./sing-box-config.json
+```
+
+### 客户端配置说明
+
+生成的客户端配置包含：
+- **本地 SOCKS5 代理**: `127.0.0.1:1080`
+- **路由规则**: 国内网站直连，其他走代理
+- **协议参数**: 自动填充服务器地址、端口、密码等
+
+### 启动客户端
+
+```bash
+# 使用生成的配置文件启动 sing-box
+sing-box run -c client.json
+```
+
+或使用支持 sing-box 的 GUI 客户端导入 `client.json`。
 
 ## 卸载
 
