@@ -121,6 +121,12 @@ http://你的服务器IP:8080/xxxxxxxxxxxxxxxx
    curl -o client.json http://你的服务器IP:8080/xxxxxxxxxxxxxxxx
    ```
 
+**安全特性：**
+- ✅ 随机 Token（32位十六进制）
+- ✅ 访问频率限制（每分钟30次）
+- ✅ IP 封禁机制（超过限制封禁5分钟）
+- ✅ 访问日志记录
+
 ### 方式二：手动复制配置
 
 ```bash
@@ -149,6 +155,17 @@ sing-box run -c client.json
 
 ```bash
 cat /etc/sing-box/sub_info.txt
+```
+
+### 查看访问日志
+
+```bash
+# 查看最近访问记录
+tail -f /etc/sing-box/access.log
+
+# 或通过菜单查看
+bash <(curl -fsSL https://raw.githubusercontent.com/kyeo-hub/sb-onekey/main/sing-box-server.sh)
+# 选择选项 10
 ```
 
 ## 卸载

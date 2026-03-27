@@ -565,24 +565,78 @@ import http.server
 import socketserver
 import os
 import sys
+import time
+from datetime import datetime
 
 PORT = 8080
 TOKEN = sys.argv[1] if len(sys.argv) > 1 else "default"
 CONFIG_DIR = "/etc/sing-box"
+ACCESS_LOG = f"{CONFIG_DIR}/access.log"
+
+# 访问限制配置
+MAX_REQUESTS_PER_MIN = 30  # 每分钟最大请求数
+BLOCK_DURATION = 300       # 封禁时长（秒）
+request_history = {}       # IP -> [(timestamp, count)]
+blocked_ips = {}           # IP -> unblock_time
+
+def check_rate_limit(client_ip):
+    """检查并更新访问频率限制"""
+    now = time.time()
+    
+    # 检查是否被封禁
+    if client_ip in blocked_ips:
+        if now < blocked_ips[client_ip]:
+            return False, f"IP blocked, retry after {int(blocked_ips[client_ip] - now)}s"
+        else:
+            del blocked_ips[client_ip]
+    
+    # 清理过期记录
+    if client_ip in request_history:
+        request_history[client_ip] = [t for t in request_history[client_ip] if now - t < 60]
+    else:
+        request_history[client_ip] = []
+    
+    # 检查频率
+    if len(request_history[client_ip]) >= MAX_REQUESTS_PER_MIN:
+        blocked_ips[client_ip] = now + BLOCK_DURATION
+        return False, "Rate limit exceeded, IP blocked for 5 minutes"
+    
+    request_history[client_ip].append(now)
+    return True, "OK"
+
+def log_access(client_ip, path, status):
+    """记录访问日志"""
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    with open(ACCESS_LOG, "a") as f:
+        f.write(f"{timestamp} - {client_ip} - {path} - {status}\n")
 
 class SubHandler(http.server.SimpleHTTPRequestHandler):
     def do_GET(self):
+        client_ip = self.client_address[0]
+        
+        # 检查频率限制
+        allowed, msg = check_rate_limit(client_ip)
+        if not allowed:
+            self.send_response(429)
+            self.end_headers()
+            self.wfile.write(f'{{"error": "{msg}"}}'.encode())
+            log_access(client_ip, self.path, "429")
+            return
+        
         # 订阅链接 /token
         if self.path == f"/{TOKEN}" or self.path == f"/{TOKEN}/":
             self.send_response(200)
             self.send_header('Content-type', 'application/json')
             self.send_header('Cache-Control', 'no-cache')
+            self.send_header('X-RateLimit-Limit', str(MAX_REQUESTS_PER_MIN))
             self.end_headers()
             try:
                 with open(f"{CONFIG_DIR}/client.json", "rb") as f:
                     self.wfile.write(f.read())
+                log_access(client_ip, self.path, "200")
             except:
                 self.wfile.write(b'{"error": "config not found"}')
+                log_access(client_ip, self.path, "404")
             return
         
         # 配置文件直链 /token/client.json
@@ -594,17 +648,20 @@ class SubHandler(http.server.SimpleHTTPRequestHandler):
             try:
                 with open(f"{CONFIG_DIR}/client.json", "rb") as f:
                     self.wfile.write(f.read())
+                log_access(client_ip, self.path, "200")
             except:
                 self.wfile.write(b'{"error": "config not found"}')
+                log_access(client_ip, self.path, "404")
             return
         
         # 404
         self.send_response(404)
         self.end_headers()
         self.wfile.write(b'Not Found')
+        log_access(client_ip, self.path, "404")
     
     def log_message(self, format, *args):
-        pass  # 静默日志
+        pass  # 静默日志（使用自定义日志）
 
 if __name__ == "__main__":
     with socketserver.TCPServer(("", PORT), SubHandler) as httpd:
@@ -706,6 +763,7 @@ show_menu() {
     echo -e "${BLUE}║  ${YELLOW}7.${PLAIN} 重启 sing-box                       ${BLUE}║${PLAIN}"
     echo -e "${BLUE}║  ${YELLOW}8.${PLAIN} 查看实时日志                        ${BLUE}║${PLAIN}"
     echo -e "${BLUE}║  ${YELLOW}9.${PLAIN} 更新 sing-box 到最新版              ${BLUE}║${PLAIN}"
+    echo -e "${BLUE}║  ${CYAN}10.${PLAIN} 查看订阅访问日志                   ${BLUE}║${PLAIN}"
     echo -e "${BLUE}╠══════════════════════════════════════════╣${PLAIN}"
     echo -e "${BLUE}║  ${RED}0.${PLAIN} 卸载 sing-box                       ${BLUE}║${PLAIN}"
     echo -e "${BLUE}╚══════════════════════════════════════════╝${PLAIN}"
@@ -795,6 +853,22 @@ main() {
                 install_singbox_binary
                 systemctl start sing-box
                 info "更新完成"
+                ;;
+            9)
+                check_os; install_deps
+                systemctl stop sing-box 2>/dev/null || true
+                install_singbox_binary
+                systemctl start sing-box
+                info "更新完成"
+                ;;
+            10) 
+                if [[ -f "${SING_BOX_DIR}/access.log" ]]; then
+                    echo -e "${CYAN}════════════ 订阅访问日志（最近20条）════════════${PLAIN}"
+                    tail -20 "${SING_BOX_DIR}/access.log"
+                    echo -e "${CYAN}══════════════════════════════════════════════════${PLAIN}"
+                else
+                    warn "暂无访问日志"
+                fi
                 ;;
             0) do_uninstall ;;
             *) warn "无效选项" ;;
