@@ -400,6 +400,7 @@ gen_client_config() {
     "rules": [
       { "rule_set": ["geosite-cn", "geosite-category-ads-all"], "action": "route", "server": "dns-direct" }
     ],
+    "strategy": "prefer_ipv4",
     "final": "dns-remote"
   },
   "inbounds": [
@@ -445,6 +446,7 @@ gen_client_config() {
       { "ip_cidr": ["172.19.0.2/32"], "port": 53, "action": "hijack-dns" },
       { "protocol": "dns", "action": "hijack-dns" },
       { "rule_set": ["geosite-category-ads-all"], "action": "reject" },
+      { "ip_is_private": true, "action": "direct" },
       { "rule_set": ["geosite-cn", "geoip-cn", "geosite-private"], "action": "direct" },
       { "protocol": "quic", "action": "reject" }
     ],
@@ -479,6 +481,7 @@ EOF
     "rules": [
       { "rule_set": ["geosite-cn", "geosite-category-ads-all"], "action": "route", "server": "dns-direct" }
     ],
+    "strategy": "prefer_ipv4",
     "final": "dns-remote"
   },
   "inbounds": [
@@ -518,6 +521,7 @@ EOF
       { "ip_cidr": ["172.19.0.2/32"], "port": 53, "action": "hijack-dns" },
       { "protocol": "dns", "action": "hijack-dns" },
       { "rule_set": ["geosite-category-ads-all"], "action": "reject" },
+      { "ip_is_private": true, "action": "direct" },
       { "rule_set": ["geosite-cn", "geoip-cn", "geosite-private"], "action": "direct" },
       { "protocol": "quic", "action": "reject" }
     ],
@@ -552,6 +556,7 @@ EOF
     "rules": [
       { "rule_set": ["geosite-cn", "geosite-category-ads-all"], "action": "route", "server": "dns-direct" }
     ],
+    "strategy": "prefer_ipv4",
     "final": "dns-remote"
   },
   "inbounds": [
@@ -593,6 +598,7 @@ EOF
       { "ip_cidr": ["172.19.0.2/32"], "port": 53, "action": "hijack-dns" },
       { "protocol": "dns", "action": "hijack-dns" },
       { "rule_set": ["geosite-category-ads-all"], "action": "reject" },
+      { "ip_is_private": true, "action": "direct" },
       { "rule_set": ["geosite-cn", "geoip-cn", "geosite-private"], "action": "direct" },
       { "protocol": "quic", "action": "reject" }
     ],
@@ -627,6 +633,7 @@ EOF
     "rules": [
       { "rule_set": ["geosite-cn", "geosite-category-ads-all"], "action": "route", "server": "dns-direct" }
     ],
+    "strategy": "prefer_ipv4",
     "final": "dns-remote"
   },
   "inbounds": [
@@ -666,6 +673,7 @@ EOF
       { "ip_cidr": ["172.19.0.2/32"], "port": 53, "action": "hijack-dns" },
       { "protocol": "dns", "action": "hijack-dns" },
       { "rule_set": ["geosite-category-ads-all"], "action": "reject" },
+      { "ip_is_private": true, "action": "direct" },
       { "rule_set": ["geosite-cn", "geoip-cn", "geosite-private"], "action": "direct" },
       { "protocol": "quic", "action": "reject" }
     ],
