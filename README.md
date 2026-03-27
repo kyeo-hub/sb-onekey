@@ -94,6 +94,8 @@ cat /etc/sing-box/node_info.txt
 ├── config.json          # 服务端配置文件
 ├── client.json          # 客户端配置文件（可直接使用）
 ├── node_info.txt        # 节点信息（含分享链接）
+├── sub_info.txt         # 订阅链接信息
+├── sub-server.py        # 订阅服务脚本
 └── tls/                 # TLS 证书目录（Hysteria2/TUIC）
     ├── cert.pem
     └── key.pem
@@ -101,9 +103,25 @@ cat /etc/sing-box/node_info.txt
 
 ## 客户端使用
 
-安装完成后，服务器会生成客户端配置文件 `/etc/sing-box/client.json`。
+安装完成后，服务器会生成客户端配置文件并提供订阅链接。
 
-### 获取客户端配置
+### 方式一：订阅链接（推荐）
+
+安装完成后会显示订阅链接：
+
+```
+http://你的服务器IP:8080/xxxxxxxxxxxxxxxx
+```
+
+**使用方法：**
+1. **sing-box GUI 客户端**：直接粘贴订阅链接
+2. **浏览器访问**：下载 `client.json` 配置文件
+3. **curl 下载**：
+   ```bash
+   curl -o client.json http://你的服务器IP:8080/xxxxxxxxxxxxxxxx
+   ```
+
+### 方式二：手动复制配置
 
 ```bash
 # 查看客户端配置内容
@@ -127,7 +145,11 @@ scp root@你的服务器IP:/etc/sing-box/client.json ./sing-box-config.json
 sing-box run -c client.json
 ```
 
-或使用支持 sing-box 的 GUI 客户端导入 `client.json`。
+### 查看订阅信息
+
+```bash
+cat /etc/sing-box/sub_info.txt
+```
 
 ## 卸载
 

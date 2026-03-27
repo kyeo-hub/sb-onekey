@@ -523,6 +523,133 @@ EOF
     esac
     
     info "客户端配置已保存至 ${SING_BOX_DIR}/client.json"
+    
+    # 生成订阅链接信息
+    gen_subscription_info
+}
+
+# ──────────────────────────────────────────
+#  生成订阅信息
+# ──────────────────────────────────────────
+gen_subscription_info() {
+    # 生成随机订阅 token
+    SUB_TOKEN=$(openssl rand -hex 16)
+    
+    # 保存订阅信息
+    cat > "${SING_BOX_DIR}/sub_info.txt" <<EOF
+========================================
+         客户端订阅信息
+========================================
+
+【订阅链接】
+http://${SERVER_IP}:8080/${SUB_TOKEN}
+
+【配置文件直链】
+http://${SERVER_IP}:8080/${SUB_TOKEN}/client.json
+
+【使用说明】
+1. 在客户端中使用上述订阅链接
+2. 或下载 client.json 配置文件
+3. sing-box 会每 60 秒自动更新配置
+
+【查看配置】
+cat ${SING_BOX_DIR}/client.json
+
+========================================
+EOF
+
+    # 创建订阅服务脚本
+    cat > "${SING_BOX_DIR}/sub-server.py" <<'PYEOF'
+#!/usr/bin/env python3
+import http.server
+import socketserver
+import os
+import sys
+
+PORT = 8080
+TOKEN = sys.argv[1] if len(sys.argv) > 1 else "default"
+CONFIG_DIR = "/etc/sing-box"
+
+class SubHandler(http.server.SimpleHTTPRequestHandler):
+    def do_GET(self):
+        # 订阅链接 /token
+        if self.path == f"/{TOKEN}" or self.path == f"/{TOKEN}/":
+            self.send_response(200)
+            self.send_header('Content-type', 'application/json')
+            self.send_header('Cache-Control', 'no-cache')
+            self.end_headers()
+            try:
+                with open(f"{CONFIG_DIR}/client.json", "rb") as f:
+                    self.wfile.write(f.read())
+            except:
+                self.wfile.write(b'{"error": "config not found"}')
+            return
+        
+        # 配置文件直链 /token/client.json
+        if self.path == f"/{TOKEN}/client.json":
+            self.send_response(200)
+            self.send_header('Content-type', 'application/json')
+            self.send_header('Content-Disposition', 'attachment; filename="sing-box.json"')
+            self.end_headers()
+            try:
+                with open(f"{CONFIG_DIR}/client.json", "rb") as f:
+                    self.wfile.write(f.read())
+            except:
+                self.wfile.write(b'{"error": "config not found"}')
+            return
+        
+        # 404
+        self.send_response(404)
+        self.end_headers()
+        self.wfile.write(b'Not Found')
+    
+    def log_message(self, format, *args):
+        pass  # 静默日志
+
+if __name__ == "__main__":
+    with socketserver.TCPServer(("", PORT), SubHandler) as httpd:
+        print(f"Subscription server running on port {PORT}")
+        httpd.serve_forever()
+PYEOF
+
+    chmod +x "${SING_BOX_DIR}/sub-server.py"
+    
+    # 创建 systemd 服务
+    cat > /etc/systemd/system/sing-box-sub.service <<EOF
+[Unit]
+Description=sing-box subscription server
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=${SING_BOX_DIR}
+ExecStart=/usr/bin/python3 ${SING_BOX_DIR}/sub-server.py ${SUB_TOKEN}
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+    systemctl daemon-reload
+    systemctl enable sing-box-sub
+    systemctl restart sing-box-sub
+    
+    # 开放 8080 端口
+    if command -v ufw &>/dev/null && ufw status | grep -q "active"; then
+        ufw allow 8080/tcp >/dev/null 2>&1
+    fi
+    if command -v firewall-cmd &>/dev/null; then
+        firewall-cmd --permanent --add-port=8080/tcp >/dev/null 2>&1
+        firewall-cmd --reload >/dev/null 2>&1
+    fi
+    iptables -I INPUT -p tcp --dport 8080 -j ACCEPT 2>/dev/null
+    
+    info "订阅服务已启动"
+    echo -e "${CYAN}"
+    cat "${SING_BOX_DIR}/sub_info.txt"
+    echo -e "${PLAIN}"
 }
 
 # ──────────────────────────────────────────
