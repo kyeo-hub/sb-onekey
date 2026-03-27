@@ -31,7 +31,9 @@ confirm() {
 }
 
 check_root() {
-    [[ $EUID -ne 0 ]] && error "请使用 root 权限运行此脚本"
+    if [ "$(id -u)" != "0" ]; then
+        error "请使用 root 权限运行此脚本"
+    fi
 }
 
 check_os() {
