@@ -555,7 +555,7 @@ EOF
       { "tag": "dns-block", "address": "rcode://success" }
     ],
     "rules": [
-      { "geosite": ["category-ads-all", "cn"], "server": "dns-direct" },
+      { "rule_set": ["geosite-cn", "geosite-category-ads-all"], "server": "dns-direct" },
       { "outbound": ["proxy"], "server": "dns-remote" }
     ],
     "final": "dns-remote"
@@ -597,13 +597,19 @@ EOF
   "route": {
     "rules": [
       { "protocol": "dns", "action": "hijack-dns" },
-      { "geosite": ["category-ads-all", "geolocation-!cn"], "outbound": "block" },
-      { "geosite": ["cn", "private"], "geoip": ["cn", "private"], "outbound": "direct" },
+      { "rule_set": ["geosite-category-ads-all"], "outbound": "block" },
+      { "rule_set": ["geosite-cn", "geoip-cn", "geoip-private"], "outbound": "direct" },
       { "port": [22, 80, 443, 8080], "outbound": "proxy" },
       { "protocol": "quic", "outbound": "block" }
     ],
     "final": "proxy",
-    "auto_detect_interface": true
+    "auto_detect_interface": true,
+    "rule_set": [
+      { "tag": "geosite-cn", "type": "remote", "format": "binary", "url": "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-cn.srs", "download_detour": "proxy" },
+      { "tag": "geosite-category-ads-all", "type": "remote", "format": "binary", "url": "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-category-ads-all.srs", "download_detour": "proxy" },
+      { "tag": "geoip-cn", "type": "remote", "format": "binary", "url": "https://raw.githubusercontent.com/SagerNet/sing-geoip/rule-set/geoip-cn.srs", "download_detour": "proxy" },
+      { "tag": "geoip-private", "type": "remote", "format": "binary", "url": "https://raw.githubusercontent.com/SagerNet/sing-geoip/rule-set/geoip-private.srs", "download_detour": "proxy" }
+    ]
   },
   "experimental": {
     "clash_api": {
@@ -846,21 +852,6 @@ class SubHandler(http.server.SimpleHTTPRequestHandler):
             self.send_header('Content-type', 'application/json')
             self.send_header('Cache-Control', 'no-cache')
             self.send_header('X-RateLimit-Limit', str(MAX_REQUESTS_PER_MIN))
-            self.end_headers()
-            try:
-                with open(f"{CONFIG_DIR}/client.json", "rb") as f:
-                    self.wfile.write(f.read())
-                log_access(client_ip, self.path, "200")
-            except:
-                self.wfile.write(b'{"error": "config not found"}')
-                log_access(client_ip, self.path, "404")
-            return
-        
-        # 配置文件直链 /token/client.json
-        if self.path == f"/{TOKEN}/client.json":
-            self.send_response(200)
-            self.send_header('Content-type', 'application/json')
-            self.send_header('Content-Disposition', 'attachment; filename="sing-box.json"')
             self.end_headers()
             try:
                 with open(f"{CONFIG_DIR}/client.json", "rb") as f:
@@ -1117,9 +1108,7 @@ do_uninstall() {
 #  入口
 # ──────────────────────────────────────────
 main() {
-    echo "[DEBUG] Script started, args: $*"
     check_root
-    echo "[DEBUG] Root check passed"
 
     # 支持命令行参数直接安装
     case "${1:-}" in
@@ -1143,13 +1132,6 @@ main() {
             6) systemctl status sing-box --no-pager ;;
             7) systemctl restart sing-box && info "已重启" ;;
             8) journalctl -u sing-box -f --no-pager ;;
-            9)
-                check_os; install_deps
-                systemctl stop sing-box 2>/dev/null || true
-                install_singbox_binary
-                systemctl start sing-box
-                info "更新完成"
-                ;;
             9)
                 check_os; install_deps
                 systemctl stop sing-box 2>/dev/null || true
