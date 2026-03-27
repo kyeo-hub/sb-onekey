@@ -80,12 +80,18 @@ cat /etc/sing-box/node_info.txt
 
 ### 推荐客户端
 
-| 平台 | 客户端 |
-|------|--------|
-| Windows | [sing-box](https://github.com/SagerNet/sing-box) / [v2rayN](https://github.com/2dust/v2rayN) |
-| macOS | [sing-box](https://github.com/SagerNet/sing-box) / [V2RayXS](https://github.com/tzmax/V2RayXS) |
-| iOS | [Shadowrocket](https://apps.apple.com/us/app/shadowrocket/id932747118) / [sing-box](https://apps.apple.com/us/app/sing-box/id6451272673) |
-| Android | [sing-box](https://github.com/SagerNet/sing-box) / [v2rayNG](https://github.com/2dust/v2rayNG) |
+| 平台 | 客户端 | 导入方式 |
+|------|--------|----------|
+| Windows | [sing-box](https://github.com/SagerNet/sing-box) / [v2rayN](https://github.com/2dust/v2rayN) | 配置文件 |
+| macOS | [sing-box](https://github.com/SagerNet/sing-box) / [V2RayXS](https://github.com/tzmax/V2RayXS) | 配置文件 |
+| iOS | [Shadowrocket](https://apps.apple.com/us/app/shadowrocket/id932747118) / [sing-box](https://apps.apple.com/us/app/sing-box/id6451272673) | 扫码/订阅 |
+| **Android** | **[sing-box](https://github.com/SagerNet/sing-box/releases)** ⭐ | **扫码/订阅** |
+
+**安卓推荐**: [SFA (sing-box for Android)](https://github.com/SagerNet/sing-box/releases)
+- 支持二维码扫描导入
+- 支持订阅链接
+- 原生支持 TUN 模式
+- 界面简洁，功能完整
 
 ## 目录结构
 
@@ -94,8 +100,11 @@ cat /etc/sing-box/node_info.txt
 ├── config.json          # 服务端配置文件
 ├── client.json          # 客户端配置文件（可直接使用）
 ├── node_info.txt        # 节点信息（含分享链接）
-├── sub_info.txt         # 订阅链接信息
+├── sub_info.txt         # 订阅链接信息（含二维码）
+├── sub_qr.txt           # 二维码（终端显示）
+├── sub_qr.png           # 二维码（图片）
 ├── sub-server.py        # 订阅服务脚本
+├── access.log           # 访问日志
 └── tls/                 # TLS 证书目录（Hysteria2/TUIC）
     ├── cert.pem
     └── key.pem
@@ -105,21 +114,33 @@ cat /etc/sing-box/node_info.txt
 
 安装完成后，服务器会生成客户端配置文件并提供订阅链接。
 
-### 方式一：订阅链接（推荐）
+### 方式一：订阅链接 / 二维码（推荐）
 
-安装完成后会显示订阅链接：
+安装完成后会显示订阅链接和二维码：
 
 ```
 http://你的服务器IP:8080/xxxxxxxxxxxxxxxx
 ```
 
-**使用方法：**
-1. **sing-box GUI 客户端**：直接粘贴订阅链接
-2. **浏览器访问**：下载 `client.json` 配置文件
-3. **curl 下载**：
-   ```bash
-   curl -o client.json http://你的服务器IP:8080/xxxxxxxxxxxxxxxx
-   ```
+**安卓手机扫码导入：**
+1. 打开安卓 sing-box 客户端
+2. 点击右上角 "+" 或 "添加配置"
+3. 选择 "扫描二维码"
+4. 扫描终端显示的二维码即可自动导入
+
+**其他方式：**
+- **sing-box GUI 客户端**：直接粘贴订阅链接
+- **浏览器访问**：下载 `client.json` 配置文件
+- **curl 下载**：
+  ```bash
+  curl -o client.json http://你的服务器IP:8080/xxxxxxxxxxxxxxxx
+  ```
+
+**二维码下载：**
+```bash
+# 下载二维码图片
+wget http://你的服务器IP:8080/xxxxxxxxxxxxxxxx/qr.png
+```
 
 **安全特性：**
 - ✅ 随机 Token（32位十六进制）

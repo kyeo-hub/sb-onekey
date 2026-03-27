@@ -691,6 +691,18 @@ gen_subscription_info() {
     # 生成随机订阅 token
     SUB_TOKEN=$(openssl rand -hex 16)
     
+    # 安装 qrencode（如果不存在）
+    if ! command -v qrencode &>/dev/null; then
+        apt-get install -y -qq qrencode 2>/dev/null || yum install -y -q qrencode 2>/dev/null || true
+    fi
+    
+    # 生成二维码
+    SUB_URL="http://${SERVER_IP}:8080/${SUB_TOKEN}"
+    if command -v qrencode &>/dev/null; then
+        echo "${SUB_URL}" | qrencode -t ANSIUTF8 -o "${SING_BOX_DIR}/sub_qr.txt"
+        echo "${SUB_URL}" | qrencode -o "${SING_BOX_DIR}/sub_qr.png" 2>/dev/null || true
+    fi
+    
     # 保存订阅信息
     cat > "${SING_BOX_DIR}/sub_info.txt" <<EOF
 ========================================
@@ -698,15 +710,27 @@ gen_subscription_info() {
 ========================================
 
 【订阅链接】
-http://${SERVER_IP}:8080/${SUB_TOKEN}
+${SUB_URL}
 
 【配置文件直链】
 http://${SERVER_IP}:8080/${SUB_TOKEN}/client.json
 
+【二维码导入】
+安卓手机可直接扫描下方二维码导入：
+
+EOF
+
+    # 如果有 qrencode，添加二维码到信息文件
+    if [ -f "${SING_BOX_DIR}/sub_qr.txt" ]; then
+        cat "${SING_BOX_DIR}/sub_qr.txt" >> "${SING_BOX_DIR}/sub_info.txt"
+    fi
+    
+    cat >> "${SING_BOX_DIR}/sub_info.txt" <<EOF
+
 【使用说明】
-1. 在客户端中使用上述订阅链接
-2. 或下载 client.json 配置文件
-3. sing-box 会每 60 秒自动更新配置
+1. 安卓 sing-box 客户端：扫描二维码或粘贴订阅链接
+2. 其他客户端：下载 client.json 配置文件
+3. 访问日志：${SING_BOX_DIR}/access.log
 
 【查看配置】
 cat ${SING_BOX_DIR}/client.json
@@ -807,6 +831,23 @@ class SubHandler(http.server.SimpleHTTPRequestHandler):
                 log_access(client_ip, self.path, "200")
             except:
                 self.wfile.write(b'{"error": "config not found"}')
+                log_access(client_ip, self.path, "404")
+            return
+        
+        # 二维码图片 /token/qr.png
+        if self.path == f"/{TOKEN}/qr.png":
+            self.send_response(200)
+            self.send_header('Content-type', 'image/png')
+            self.send_header('Content-Disposition', 'inline; filename="qr.png"')
+            self.end_headers()
+            try:
+                with open(f"{CONFIG_DIR}/sub_qr.png", "rb") as f:
+                    self.wfile.write(f.read())
+                log_access(client_ip, self.path, "200")
+            except:
+                self.send_response(404)
+                self.end_headers()
+                self.wfile.write(b'QR code not found')
                 log_access(client_ip, self.path, "404")
             return
         
