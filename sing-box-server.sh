@@ -394,13 +394,12 @@ gen_client_config() {
   "log": { "level": "warn", "timestamp": true },
   "dns": {
     "servers": [
-      { "tag": "dns-remote", "address": "https://1.1.1.1/dns-query", "detour": "proxy" },
-      { "tag": "dns-direct", "address": "https://223.5.5.5/dns-query", "detour": "direct" },
-      { "tag": "dns-block", "address": "rcode://success" }
+      { "tag": "dns-remote", "type": "https", "server": "1.1.1.1", "server_port": 443, "path": "/dns-query", "detour": "proxy" },
+      { "tag": "dns-direct", "type": "https", "server": "223.5.5.5", "server_port": 443, "path": "/dns-query", "detour": "direct" },
+      { "tag": "dns-block", "type": "rcode" }
     ],
     "rules": [
-      { "rule_set": ["geosite-cn", "geosite-category-ads-all"], "server": "dns-direct" },
-      { "outbound": ["proxy"], "server": "dns-remote" }
+      { "rule_set": ["geosite-cn", "geosite-category-ads-all"], "server": "dns-direct" }
     ],
     "final": "dns-remote"
   },
@@ -443,6 +442,7 @@ gen_client_config() {
     { "type": "block", "tag": "block" }
   ],
   "route": {
+    "default_domain_resolver": { "server": "dns-direct" },
     "rules": [
       { "protocol": "dns", "action": "hijack-dns" },
       { "rule_set": ["geosite-category-ads-all"], "outbound": "block" },
@@ -475,13 +475,12 @@ EOF
   "log": { "level": "warn", "timestamp": true },
   "dns": {
     "servers": [
-      { "tag": "dns-remote", "address": "https://1.1.1.1/dns-query", "detour": "proxy" },
-      { "tag": "dns-direct", "address": "https://223.5.5.5/dns-query", "detour": "direct" },
-      { "tag": "dns-block", "address": "rcode://success" }
+      { "tag": "dns-remote", "type": "https", "server": "1.1.1.1", "server_port": 443, "path": "/dns-query", "detour": "proxy" },
+      { "tag": "dns-direct", "type": "https", "server": "223.5.5.5", "server_port": 443, "path": "/dns-query", "detour": "direct" },
+      { "tag": "dns-block", "type": "rcode" }
     ],
     "rules": [
-      { "rule_set": ["geosite-cn", "geosite-category-ads-all"], "server": "dns-direct" },
-      { "outbound": ["proxy"], "server": "dns-remote" }
+      { "rule_set": ["geosite-cn", "geosite-category-ads-all"], "server": "dns-direct" }
     ],
     "final": "dns-remote"
   },
@@ -518,6 +517,7 @@ EOF
     { "type": "block", "tag": "block" }
   ],
   "route": {
+    "default_domain_resolver": { "server": "dns-direct" },
     "rules": [
       { "protocol": "dns", "action": "hijack-dns" },
       { "rule_set": ["geosite-category-ads-all"], "outbound": "block" },
@@ -550,13 +550,12 @@ EOF
   "log": { "level": "warn", "timestamp": true },
   "dns": {
     "servers": [
-      { "tag": "dns-remote", "address": "https://1.1.1.1/dns-query", "detour": "proxy" },
-      { "tag": "dns-direct", "address": "https://223.5.5.5/dns-query", "detour": "direct" },
-      { "tag": "dns-block", "address": "rcode://success" }
+      { "tag": "dns-remote", "type": "https", "server": "1.1.1.1", "server_port": 443, "path": "/dns-query", "detour": "proxy" },
+      { "tag": "dns-direct", "type": "https", "server": "223.5.5.5", "server_port": 443, "path": "/dns-query", "detour": "direct" },
+      { "tag": "dns-block", "type": "rcode" }
     ],
     "rules": [
-      { "rule_set": ["geosite-cn", "geosite-category-ads-all"], "server": "dns-direct" },
-      { "outbound": ["proxy"], "server": "dns-remote" }
+      { "rule_set": ["geosite-cn", "geosite-category-ads-all"], "server": "dns-direct" }
     ],
     "final": "dns-remote"
   },
@@ -595,6 +594,7 @@ EOF
     { "type": "block", "tag": "block" }
   ],
   "route": {
+    "default_domain_resolver": { "server": "dns-direct" },
     "rules": [
       { "protocol": "dns", "action": "hijack-dns" },
       { "rule_set": ["geosite-category-ads-all"], "outbound": "block" },
@@ -627,13 +627,12 @@ EOF
   "log": { "level": "warn", "timestamp": true },
   "dns": {
     "servers": [
-      { "tag": "dns-remote", "address": "https://1.1.1.1/dns-query", "detour": "proxy" },
-      { "tag": "dns-direct", "address": "https://223.5.5.5/dns-query", "detour": "direct" },
-      { "tag": "dns-block", "address": "rcode://success" }
+      { "tag": "dns-remote", "type": "https", "server": "1.1.1.1", "server_port": 443, "path": "/dns-query", "detour": "proxy" },
+      { "tag": "dns-direct", "type": "https", "server": "223.5.5.5", "server_port": 443, "path": "/dns-query", "detour": "direct" },
+      { "tag": "dns-block", "type": "rcode" }
     ],
     "rules": [
-      { "rule_set": ["geosite-cn", "geosite-category-ads-all"], "server": "dns-direct" },
-      { "outbound": ["proxy"], "server": "dns-remote" }
+      { "rule_set": ["geosite-cn", "geosite-category-ads-all"], "server": "dns-direct" }
     ],
     "final": "dns-remote"
   },
@@ -670,6 +669,7 @@ EOF
     { "type": "block", "tag": "block" }
   ],
   "route": {
+    "default_domain_resolver": { "server": "dns-direct" },
     "rules": [
       { "protocol": "dns", "action": "hijack-dns" },
       { "rule_set": ["geosite-category-ads-all"], "outbound": "block" },
