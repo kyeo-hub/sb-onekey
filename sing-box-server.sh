@@ -440,12 +440,11 @@ gen_client_config() {
       }
     },
     { "type": "direct", "tag": "direct" },
-    { "type": "block", "tag": "block" },
-    { "type": "dns", "tag": "dns-out" }
+    { "type": "block", "tag": "block" }
   ],
   "route": {
     "rules": [
-      { "protocol": "dns", "outbound": "dns-out" },
+      { "protocol": "dns", "action": "hijack-dns" },
       { "geosite": ["category-ads-all", "geolocation-!cn"], "outbound": "block" },
       { "geosite": ["cn", "private"], "geoip": ["cn", "private"], "outbound": "direct" },
       { "port": [22, 80, 443, 8080], "outbound": "proxy" },
@@ -510,12 +509,11 @@ EOF
       "tls": { "enabled": true, "insecure": true }
     },
     { "type": "direct", "tag": "direct" },
-    { "type": "block", "tag": "block" },
-    { "type": "dns", "tag": "dns-out" }
+    { "type": "block", "tag": "block" }
   ],
   "route": {
     "rules": [
-      { "protocol": "dns", "outbound": "dns-out" },
+      { "protocol": "dns", "action": "hijack-dns" },
       { "geosite": ["category-ads-all", "geolocation-!cn"], "outbound": "block" },
       { "geosite": ["cn", "private"], "geoip": ["cn", "private"], "outbound": "direct" },
       { "port": [22, 80, 443, 8080], "outbound": "proxy" },
@@ -582,12 +580,11 @@ EOF
       "tls": { "enabled": true, "alpn": ["h3"], "insecure": true }
     },
     { "type": "direct", "tag": "direct" },
-    { "type": "block", "tag": "block" },
-    { "type": "dns", "tag": "dns-out" }
+    { "type": "block", "tag": "block" }
   ],
   "route": {
     "rules": [
-      { "protocol": "dns", "outbound": "dns-out" },
+      { "protocol": "dns", "action": "hijack-dns" },
       { "geosite": ["category-ads-all", "geolocation-!cn"], "outbound": "block" },
       { "geosite": ["cn", "private"], "geoip": ["cn", "private"], "outbound": "direct" },
       { "port": [22, 80, 443, 8080], "outbound": "proxy" },
@@ -652,12 +649,11 @@ EOF
       "password": "${SS_KEY}"
     },
     { "type": "direct", "tag": "direct" },
-    { "type": "block", "tag": "block" },
-    { "type": "dns", "tag": "dns-out" }
+    { "type": "block", "tag": "block" }
   ],
   "route": {
     "rules": [
-      { "protocol": "dns", "outbound": "dns-out" },
+      { "protocol": "dns", "action": "hijack-dns" },
       { "geosite": ["category-ads-all", "geolocation-!cn"], "outbound": "block" },
       { "geosite": ["cn", "private"], "geoip": ["cn", "private"], "outbound": "direct" },
       { "port": [22, 80, 443, 8080], "outbound": "proxy" },
