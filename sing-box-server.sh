@@ -396,10 +396,9 @@ gen_client_config() {
     "servers": [
       { "tag": "dns-remote", "type": "https", "server": "1.1.1.1", "server_port": 443, "path": "/dns-query", "detour": "proxy" },
       { "tag": "dns-direct", "type": "https", "server": "223.5.5.5", "server_port": 443, "path": "/dns-query", "detour": "direct" },
-      { "tag": "dns-block", "type": "rcode" }
     ],
     "rules": [
-      { "rule_set": ["geosite-cn", "geosite-category-ads-all"], "server": "dns-direct" }
+      { "rule_set": ["geosite-cn", "geosite-category-ads-all"], "action": "route", "server": "dns-direct" }
     ],
     "final": "dns-remote"
   },
@@ -477,10 +476,9 @@ EOF
     "servers": [
       { "tag": "dns-remote", "type": "https", "server": "1.1.1.1", "server_port": 443, "path": "/dns-query", "detour": "proxy" },
       { "tag": "dns-direct", "type": "https", "server": "223.5.5.5", "server_port": 443, "path": "/dns-query", "detour": "direct" },
-      { "tag": "dns-block", "type": "rcode" }
     ],
     "rules": [
-      { "rule_set": ["geosite-cn", "geosite-category-ads-all"], "server": "dns-direct" }
+      { "rule_set": ["geosite-cn", "geosite-category-ads-all"], "action": "route", "server": "dns-direct" }
     ],
     "final": "dns-remote"
   },
@@ -552,10 +550,9 @@ EOF
     "servers": [
       { "tag": "dns-remote", "type": "https", "server": "1.1.1.1", "server_port": 443, "path": "/dns-query", "detour": "proxy" },
       { "tag": "dns-direct", "type": "https", "server": "223.5.5.5", "server_port": 443, "path": "/dns-query", "detour": "direct" },
-      { "tag": "dns-block", "type": "rcode" }
     ],
     "rules": [
-      { "rule_set": ["geosite-cn", "geosite-category-ads-all"], "server": "dns-direct" }
+      { "rule_set": ["geosite-cn", "geosite-category-ads-all"], "action": "route", "server": "dns-direct" }
     ],
     "final": "dns-remote"
   },
@@ -629,10 +626,9 @@ EOF
     "servers": [
       { "tag": "dns-remote", "type": "https", "server": "1.1.1.1", "server_port": 443, "path": "/dns-query", "detour": "proxy" },
       { "tag": "dns-direct", "type": "https", "server": "223.5.5.5", "server_port": 443, "path": "/dns-query", "detour": "direct" },
-      { "tag": "dns-block", "type": "rcode" }
     ],
     "rules": [
-      { "rule_set": ["geosite-cn", "geosite-category-ads-all"], "server": "dns-direct" }
+      { "rule_set": ["geosite-cn", "geosite-category-ads-all"], "action": "route", "server": "dns-direct" }
     ],
     "final": "dns-remote"
   },
