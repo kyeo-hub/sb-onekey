@@ -395,7 +395,7 @@ gen_client_config() {
   "dns": {
     "servers": [
       { "tag": "dns-remote", "type": "https", "server": "1.1.1.1", "server_port": 443, "path": "/dns-query", "detour": "proxy" },
-      { "tag": "dns-direct", "type": "https", "server": "223.5.5.5", "server_port": 443, "path": "/dns-query", "detour": "direct" }
+      { "tag": "dns-direct", "type": "https", "server": "223.5.5.5", "server_port": 443, "path": "/dns-query" }
     ],
     "rules": [
       { "rule_set": ["geosite-cn", "geosite-category-ads-all"], "action": "route", "server": "dns-direct" }
@@ -475,7 +475,7 @@ EOF
   "dns": {
     "servers": [
       { "tag": "dns-remote", "type": "https", "server": "1.1.1.1", "server_port": 443, "path": "/dns-query", "detour": "proxy" },
-      { "tag": "dns-direct", "type": "https", "server": "223.5.5.5", "server_port": 443, "path": "/dns-query", "detour": "direct" }
+      { "tag": "dns-direct", "type": "https", "server": "223.5.5.5", "server_port": 443, "path": "/dns-query" }
     ],
     "rules": [
       { "rule_set": ["geosite-cn", "geosite-category-ads-all"], "action": "route", "server": "dns-direct" }
@@ -549,7 +549,7 @@ EOF
   "dns": {
     "servers": [
       { "tag": "dns-remote", "type": "https", "server": "1.1.1.1", "server_port": 443, "path": "/dns-query", "detour": "proxy" },
-      { "tag": "dns-direct", "type": "https", "server": "223.5.5.5", "server_port": 443, "path": "/dns-query", "detour": "direct" }
+      { "tag": "dns-direct", "type": "https", "server": "223.5.5.5", "server_port": 443, "path": "/dns-query" }
     ],
     "rules": [
       { "rule_set": ["geosite-cn", "geosite-category-ads-all"], "action": "route", "server": "dns-direct" }
@@ -625,7 +625,7 @@ EOF
   "dns": {
     "servers": [
       { "tag": "dns-remote", "type": "https", "server": "1.1.1.1", "server_port": 443, "path": "/dns-query", "detour": "proxy" },
-      { "tag": "dns-direct", "type": "https", "server": "223.5.5.5", "server_port": 443, "path": "/dns-query", "detour": "direct" }
+      { "tag": "dns-direct", "type": "https", "server": "223.5.5.5", "server_port": 443, "path": "/dns-query" }
     ],
     "rules": [
       { "rule_set": ["geosite-cn", "geosite-category-ads-all"], "action": "route", "server": "dns-direct" }
