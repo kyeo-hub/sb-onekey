@@ -86,65 +86,29 @@ journalctl -u sing-box -f
 cat /etc/sing-box/node_info.txt
 ```
 
-## 客户端配置
-
-安装完成后，脚本会自动生成客户端配置文件和分享链接。
-
-### 配置文件
+## 文件说明
 
 安装完成后在服务器上生成：
 
 ```
 /etc/sing-box/
 ├── config.json          # 服务端配置
-├── client.json          # 客户端配置（可直接使用）
 ├── node_info.txt        # 节点信息（含分享链接）
 └── tls/                 # TLS 证书（Hysteria2/TUIC）
     ├── cert.pem
     └── key.pem
 ```
 
-### 导入客户端配置
-
-**方式一：scp 复制（推荐）**
-
-```bash
-scp root@你的服务器IP:/etc/sing-box/client.json ./
-```
-
-**方式二：分享链接**
+## 客户端
 
 安装完成后终端会输出分享链接，复制到客户端导入即可。
 
-### 推荐客户端
-
-| 平台 | 客户端 |
-|------|--------|
+| 平台 | 推荐客户端 |
+|------|------------|
 | Windows | [sing-box](https://github.com/SagerNet/sing-box) / [v2rayN](https://github.com/2dust/v2rayN) |
 | macOS | [sing-box](https://github.com/SagerNet/sing-box) |
 | iOS | [Shadowrocket](https://apps.apple.com/us/app/shadowrocket/id932747118) / [sing-box](https://apps.apple.com/us/app/sing-box/id6451272673) |
 | Android | [sing-box](https://github.com/SagerNet/sing-box/releases) ⭐ |
-
-### 客户端配置说明
-
-生成的客户端配置包含以下功能：
-
-| 功能 | 说明 |
-|------|------|
-| **TUN 模式** | 透明代理，无需手动设置系统代理，所有流量自动分流 |
-| **SOCKS5 混合代理** | `127.0.0.1:1080`，兼容不支持 TUN 的场景 |
-| **DNS 分流** | 国内域名用阿里 DNS，国外域名用 Cloudflare DNS |
-| **纯 IPv4 策略** | `strategy: ipv4_only`，禁用 AAAA 查询，避免 IPv6 不可达 |
-| **广告屏蔽** | 自动屏蔽常见广告域名 |
-| **智能分流** | 国内 IP/域名直连，私有 IP 直连，其余走代理 |
-| **Clash API** | `127.0.0.1:9090`，支持 GUI 客户端管理 |
-
-### 启动客户端
-
-```bash
-# 使用生成的配置文件启动
-sing-box run -c client.json
-```
 
 ## 卸载
 

@@ -210,7 +210,6 @@ EOF
     echo -e "${CYAN}═══════════════════════════════════════════════${PLAIN}\n"
 
     save_node_info "VLESS-REALITY" "${SHARE_LINK}"
-    gen_client_config "vless-reality"
 }
 
 ## 2. Hysteria2
@@ -263,7 +262,6 @@ EOF
     echo -e "${CYAN}════════════════════════════════════════════${PLAIN}\n"
 
     save_node_info "Hysteria2" "${SHARE_LINK}"
-    gen_client_config "hysteria2"
 }
 
 ## 3. TUIC v5
@@ -319,7 +317,6 @@ EOF
     echo -e "${CYAN}══════════════════════════════════════════${PLAIN}\n"
 
     save_node_info "TUIC" "${SHARE_LINK}"
-    gen_client_config "tuic"
 }
 
 ## 4. Shadowsocks (2022)
@@ -360,7 +357,6 @@ EOF
     echo -e "${CYAN}═══════════════════════════════════════════════════${PLAIN}\n"
 
     save_node_info "Shadowsocks-2022" "${SHARE_LINK}"
-    gen_client_config "shadowsocks"
 }
 
 # ──────────────────────────────────────────
@@ -376,330 +372,8 @@ save_node_info() {
 分享链接:
 ${link}
 
-客户端配置文件: ${SING_BOX_DIR}/client.json
 EOF
     info "节点信息已保存至 ${SING_BOX_DIR}/node_info.txt"
-}
-
-# ──────────────────────────────────────────
-#  生成 sing-box 客户端配置
-# ──────────────────────────────────────────
-gen_client_config() {
-    local proto="$1"
-    
-    case "${proto}" in
-        vless-reality)
-            cat > "${SING_BOX_DIR}/client.json" <<EOF
-{
-  "log": { "level": "warn", "timestamp": true },
-  "dns": {
-    "servers": [
-      { "tag": "dns-remote", "type": "https", "server": "1.1.1.1", "server_port": 443, "path": "/dns-query", "detour": "proxy" },
-      { "tag": "dns-direct", "type": "https", "server": "223.5.5.5", "server_port": 443, "path": "/dns-query" }
-    ],
-    "rules": [
-      { "rule_set": ["geosite-cn", "geosite-category-ads-all"], "action": "route", "server": "dns-direct" }
-    ],
-    "strategy": "ipv4_only",
-    "final": "dns-remote"
-  },
-  "inbounds": [
-    {
-      "type": "tun",
-      "tag": "tun-in",
-      "interface_name": "sing-box",
-      "address": ["172.19.0.1/30", "fdfe:dcba:9876::1/126"],
-      "auto_route": true,
-      "strict_route": true,
-      "stack": "mixed",
-      "sniff": true,
-      "sniff_override_destination": true
-    },
-    {
-      "type": "mixed",
-      "tag": "mixed-in",
-      "listen": "127.0.0.1",
-      "listen_port": 1080,
-      "sniff": true
-    }
-  ],
-  "outbounds": [
-    {
-      "type": "vless",
-      "tag": "proxy",
-      "server": "${SERVER_IP}",
-      "server_port": ${PORT},
-      "uuid": "${UUID}",
-      "flow": "xtls-rprx-vision",
-      "tls": {
-        "enabled": true,
-        "server_name": "${SNI}",
-        "utls": { "enabled": true, "fingerprint": "chrome" },
-        "reality": { "enabled": true, "public_key": "${REALITY_PUBLIC}", "short_id": "${SHORTID}" }
-      }
-    },
-    { "type": "direct", "tag": "direct" }
-  ],
-  "route": {
-    "default_domain_resolver": "dns-direct",
-    "rules": [
-      { "protocol": "dns", "action": "hijack-dns" },
-      { "rule_set": ["geosite-category-ads-all"], "action": "reject" },
-      { "ip_is_private": true, "action": "direct" },
-      { "port": 22, "action": "direct" },
-      { "rule_set": ["geosite-cn", "geoip-cn", "geosite-private"], "action": "direct" },
-      { "protocol": "quic", "action": "reject" }
-    ],
-    "final": "proxy",
-    "auto_detect_interface": true,
-    "rule_set": [
-      { "tag": "geosite-cn", "type": "remote", "format": "binary", "url": "https://fastly.jsdelivr.net/gh/SagerNet/sing-geosite@rule-set/geosite-cn.srs", "download_detour": "direct" },
-      { "tag": "geosite-category-ads-all", "type": "remote", "format": "binary", "url": "https://fastly.jsdelivr.net/gh/SagerNet/sing-geosite@rule-set/geosite-category-ads-all.srs", "download_detour": "direct" },
-      { "tag": "geoip-cn", "type": "remote", "format": "binary", "url": "https://fastly.jsdelivr.net/gh/SagerNet/sing-geoip@rule-set/geoip-cn.srs", "download_detour": "direct" },
-      { "tag": "geosite-private", "type": "remote", "format": "binary", "url": "https://fastly.jsdelivr.net/gh/SagerNet/sing-geosite@rule-set/geosite-private.srs", "download_detour": "direct" }
-    ]
-  },
-  "experimental": {
-    "clash_api": {
-      "external_controller": "127.0.0.1:9090",
-      "secret": "",
-      "default_mode": "rule"
-    }
-  }
-}
-EOF
-            ;;
-        hysteria2)
-            cat > "${SING_BOX_DIR}/client.json" <<EOF
-{
-  "log": { "level": "warn", "timestamp": true },
-  "dns": {
-    "servers": [
-      { "tag": "dns-remote", "type": "https", "server": "1.1.1.1", "server_port": 443, "path": "/dns-query", "detour": "proxy" },
-      { "tag": "dns-direct", "type": "https", "server": "223.5.5.5", "server_port": 443, "path": "/dns-query" }
-    ],
-    "rules": [
-      { "rule_set": ["geosite-cn", "geosite-category-ads-all"], "action": "route", "server": "dns-direct" }
-    ],
-    "strategy": "ipv4_only",
-    "final": "dns-remote"
-  },
-  "inbounds": [
-    {
-      "type": "tun",
-      "tag": "tun-in",
-      "interface_name": "sing-box",
-      "address": ["172.19.0.1/30", "fdfe:dcba:9876::1/126"],
-      "auto_route": true,
-      "strict_route": true,
-      "stack": "mixed",
-      "sniff": true,
-      "sniff_override_destination": true
-    },
-    {
-      "type": "mixed",
-      "tag": "mixed-in",
-      "listen": "127.0.0.1",
-      "listen_port": 1080,
-      "sniff": true
-    }
-  ],
-  "outbounds": [
-    {
-      "type": "hysteria2",
-      "tag": "proxy",
-      "server": "${SERVER_IP}",
-      "server_port": ${PORT},
-      "password": "${PASS}",
-      "tls": { "enabled": true, "insecure": true }
-    },
-    { "type": "direct", "tag": "direct" }
-  ],
-  "route": {
-    "default_domain_resolver": "dns-direct",
-    "rules": [
-      { "protocol": "dns", "action": "hijack-dns" },
-      { "rule_set": ["geosite-category-ads-all"], "action": "reject" },
-      { "ip_is_private": true, "action": "direct" },
-      { "port": 22, "action": "direct" },
-      { "rule_set": ["geosite-cn", "geoip-cn", "geosite-private"], "action": "direct" },
-      { "protocol": "quic", "action": "reject" }
-    ],
-    "final": "proxy",
-    "auto_detect_interface": true,
-    "rule_set": [
-      { "tag": "geosite-cn", "type": "remote", "format": "binary", "url": "https://fastly.jsdelivr.net/gh/SagerNet/sing-geosite@rule-set/geosite-cn.srs", "download_detour": "direct" },
-      { "tag": "geosite-category-ads-all", "type": "remote", "format": "binary", "url": "https://fastly.jsdelivr.net/gh/SagerNet/sing-geosite@rule-set/geosite-category-ads-all.srs", "download_detour": "direct" },
-      { "tag": "geoip-cn", "type": "remote", "format": "binary", "url": "https://fastly.jsdelivr.net/gh/SagerNet/sing-geoip@rule-set/geoip-cn.srs", "download_detour": "direct" },
-      { "tag": "geosite-private", "type": "remote", "format": "binary", "url": "https://fastly.jsdelivr.net/gh/SagerNet/sing-geosite@rule-set/geosite-private.srs", "download_detour": "direct" }
-    ]
-  },
-  "experimental": {
-    "clash_api": {
-      "external_controller": "127.0.0.1:9090",
-      "secret": "",
-      "default_mode": "rule"
-    }
-  }
-}
-EOF
-            ;;
-        tuic)
-            cat > "${SING_BOX_DIR}/client.json" <<EOF
-{
-  "log": { "level": "warn", "timestamp": true },
-  "dns": {
-    "servers": [
-      { "tag": "dns-remote", "type": "https", "server": "1.1.1.1", "server_port": 443, "path": "/dns-query", "detour": "proxy" },
-      { "tag": "dns-direct", "type": "https", "server": "223.5.5.5", "server_port": 443, "path": "/dns-query" }
-    ],
-    "rules": [
-      { "rule_set": ["geosite-cn", "geosite-category-ads-all"], "action": "route", "server": "dns-direct" }
-    ],
-    "strategy": "ipv4_only",
-    "final": "dns-remote"
-  },
-  "inbounds": [
-    {
-      "type": "tun",
-      "tag": "tun-in",
-      "interface_name": "sing-box",
-      "address": ["172.19.0.1/30", "fdfe:dcba:9876::1/126"],
-      "auto_route": true,
-      "strict_route": true,
-      "stack": "mixed",
-      "sniff": true,
-      "sniff_override_destination": true
-    },
-    {
-      "type": "mixed",
-      "tag": "mixed-in",
-      "listen": "127.0.0.1",
-      "listen_port": 1080,
-      "sniff": true
-    }
-  ],
-  "outbounds": [
-    {
-      "type": "tuic",
-      "tag": "proxy",
-      "server": "${SERVER_IP}",
-      "server_port": ${PORT},
-      "uuid": "${UUID}",
-      "password": "${PASS}",
-      "congestion_control": "bbr",
-      "tls": { "enabled": true, "alpn": ["h3"], "insecure": true }
-    },
-    { "type": "direct", "tag": "direct" }
-  ],
-  "route": {
-    "default_domain_resolver": "dns-direct",
-    "rules": [
-      { "protocol": "dns", "action": "hijack-dns" },
-      { "rule_set": ["geosite-category-ads-all"], "action": "reject" },
-      { "ip_is_private": true, "action": "direct" },
-      { "port": 22, "action": "direct" },
-      { "rule_set": ["geosite-cn", "geoip-cn", "geosite-private"], "action": "direct" },
-      { "protocol": "quic", "action": "reject" }
-    ],
-    "final": "proxy",
-    "auto_detect_interface": true,
-    "rule_set": [
-      { "tag": "geosite-cn", "type": "remote", "format": "binary", "url": "https://fastly.jsdelivr.net/gh/SagerNet/sing-geosite@rule-set/geosite-cn.srs", "download_detour": "direct" },
-      { "tag": "geosite-category-ads-all", "type": "remote", "format": "binary", "url": "https://fastly.jsdelivr.net/gh/SagerNet/sing-geosite@rule-set/geosite-category-ads-all.srs", "download_detour": "direct" },
-      { "tag": "geoip-cn", "type": "remote", "format": "binary", "url": "https://fastly.jsdelivr.net/gh/SagerNet/sing-geoip@rule-set/geoip-cn.srs", "download_detour": "direct" },
-      { "tag": "geosite-private", "type": "remote", "format": "binary", "url": "https://fastly.jsdelivr.net/gh/SagerNet/sing-geosite@rule-set/geosite-private.srs", "download_detour": "direct" }
-    ]
-  },
-  "experimental": {
-    "clash_api": {
-      "external_controller": "127.0.0.1:9090",
-      "secret": "",
-      "default_mode": "rule"
-    }
-  }
-}
-EOF
-            ;;
-        shadowsocks)
-            cat > "${SING_BOX_DIR}/client.json" <<EOF
-{
-  "log": { "level": "warn", "timestamp": true },
-  "dns": {
-    "servers": [
-      { "tag": "dns-remote", "type": "https", "server": "1.1.1.1", "server_port": 443, "path": "/dns-query", "detour": "proxy" },
-      { "tag": "dns-direct", "type": "https", "server": "223.5.5.5", "server_port": 443, "path": "/dns-query" }
-    ],
-    "rules": [
-      { "rule_set": ["geosite-cn", "geosite-category-ads-all"], "action": "route", "server": "dns-direct" }
-    ],
-    "strategy": "ipv4_only",
-    "final": "dns-remote"
-  },
-  "inbounds": [
-    {
-      "type": "tun",
-      "tag": "tun-in",
-      "interface_name": "sing-box",
-      "address": ["172.19.0.1/30", "fdfe:dcba:9876::1/126"],
-      "auto_route": true,
-      "strict_route": true,
-      "stack": "mixed",
-      "sniff": true,
-      "sniff_override_destination": true
-    },
-    {
-      "type": "mixed",
-      "tag": "mixed-in",
-      "listen": "127.0.0.1",
-      "listen_port": 1080,
-      "sniff": true
-    }
-  ],
-  "outbounds": [
-    {
-      "type": "shadowsocks",
-      "tag": "proxy",
-      "server": "${SERVER_IP}",
-      "server_port": ${PORT},
-      "method": "${METHOD}",
-      "password": "${SS_KEY}"
-    },
-    { "type": "direct", "tag": "direct" }
-  ],
-  "route": {
-    "default_domain_resolver": "dns-direct",
-    "rules": [
-      { "protocol": "dns", "action": "hijack-dns" },
-      { "rule_set": ["geosite-category-ads-all"], "action": "reject" },
-      { "ip_is_private": true, "action": "direct" },
-      { "port": 22, "action": "direct" },
-      { "rule_set": ["geosite-cn", "geoip-cn", "geosite-private"], "action": "direct" },
-      { "protocol": "quic", "action": "reject" }
-    ],
-    "final": "proxy",
-    "auto_detect_interface": true,
-    "rule_set": [
-      { "tag": "geosite-cn", "type": "remote", "format": "binary", "url": "https://fastly.jsdelivr.net/gh/SagerNet/sing-geosite@rule-set/geosite-cn.srs", "download_detour": "direct" },
-      { "tag": "geosite-category-ads-all", "type": "remote", "format": "binary", "url": "https://fastly.jsdelivr.net/gh/SagerNet/sing-geosite@rule-set/geosite-category-ads-all.srs", "download_detour": "direct" },
-      { "tag": "geoip-cn", "type": "remote", "format": "binary", "url": "https://fastly.jsdelivr.net/gh/SagerNet/sing-geoip@rule-set/geoip-cn.srs", "download_detour": "direct" },
-      { "tag": "geosite-private", "type": "remote", "format": "binary", "url": "https://fastly.jsdelivr.net/gh/SagerNet/sing-geosite@rule-set/geosite-private.srs", "download_detour": "direct" }
-    ]
-  },
-  "experimental": {
-    "clash_api": {
-      "external_controller": "127.0.0.1:9090",
-      "secret": "",
-      "default_mode": "rule"
-    }
-  }
-}
-EOF
-            ;;
-    esac
-    
-    info "客户端配置已保存至 ${SING_BOX_DIR}/client.json"
-    
 }
 
 # ──────────────────────────────────────────
