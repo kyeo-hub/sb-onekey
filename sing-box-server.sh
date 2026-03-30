@@ -446,6 +446,7 @@ gen_client_config() {
       { "protocol": "dns", "action": "hijack-dns" },
       { "rule_set": ["geosite-category-ads-all"], "action": "reject" },
       { "ip_is_private": true, "action": "direct" },
+      { "port": 22, "action": "direct" },
       { "rule_set": ["geosite-cn", "geoip-cn", "geosite-private"], "action": "direct" },
       { "protocol": "quic", "action": "reject" }
     ],
@@ -520,6 +521,7 @@ EOF
       { "protocol": "dns", "action": "hijack-dns" },
       { "rule_set": ["geosite-category-ads-all"], "action": "reject" },
       { "ip_is_private": true, "action": "direct" },
+      { "port": 22, "action": "direct" },
       { "rule_set": ["geosite-cn", "geoip-cn", "geosite-private"], "action": "direct" },
       { "protocol": "quic", "action": "reject" }
     ],
@@ -596,6 +598,7 @@ EOF
       { "protocol": "dns", "action": "hijack-dns" },
       { "rule_set": ["geosite-category-ads-all"], "action": "reject" },
       { "ip_is_private": true, "action": "direct" },
+      { "port": 22, "action": "direct" },
       { "rule_set": ["geosite-cn", "geoip-cn", "geosite-private"], "action": "direct" },
       { "protocol": "quic", "action": "reject" }
     ],
@@ -670,6 +673,7 @@ EOF
       { "protocol": "dns", "action": "hijack-dns" },
       { "rule_set": ["geosite-category-ads-all"], "action": "reject" },
       { "ip_is_private": true, "action": "direct" },
+      { "port": 22, "action": "direct" },
       { "rule_set": ["geosite-cn", "geoip-cn", "geosite-private"], "action": "direct" },
       { "protocol": "quic", "action": "reject" }
     ],
