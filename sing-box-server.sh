@@ -696,256 +696,6 @@ EOF
     
     info "客户端配置已保存至 ${SING_BOX_DIR}/client.json"
     
-    # 生成订阅链接信息
-    gen_subscription_info
-}
-
-# ──────────────────────────────────────────
-#  生成订阅信息
-# ──────────────────────────────────────────
-gen_subscription_info() {
-    # 生成随机订阅 token
-    SUB_TOKEN=$(openssl rand -hex 16)
-    
-    # 安装 qrencode（如果不存在）
-    if ! command -v qrencode &>/dev/null; then
-        apt-get install -y -qq qrencode 2>/dev/null || yum install -y -q qrencode 2>/dev/null || true
-    fi
-    
-    # 生成 sing-box 订阅链接格式
-    # sing-box 订阅格式: sing-box://import-remote-profile?url=<encoded_url>#<name>
-    SUB_HTTP_URL="http://${SERVER_IP}:8080/${SUB_TOKEN}/client.json"
-    SUB_URL_ENCODED=$(echo -n "${SUB_HTTP_URL}" | python3 -c "import sys,urllib.parse;print(urllib.parse.quote(sys.stdin.read().strip()))" 2>/dev/null || echo "${SUB_HTTP_URL}")
-    SUB_URL="sing-box://import-remote-profile?url=${SUB_URL_ENCODED}#sb-onekey"
-    
-    # 同时生成普通 HTTP 链接（用于浏览器下载）
-    SUB_HTTP_ONLY="http://${SERVER_IP}:8080/${SUB_TOKEN}"
-    
-    if command -v qrencode &>/dev/null; then
-        echo "${SUB_URL}" | qrencode -t ANSIUTF8 -o "${SING_BOX_DIR}/sub_qr.txt"
-        echo "${SUB_URL}" | qrencode -o "${SING_BOX_DIR}/sub_qr.png" 2>/dev/null || true
-    fi
-    
-    # 保存订阅信息
-    cat > "${SING_BOX_DIR}/sub_info.txt" <<EOF
-========================================
-         客户端订阅信息
-========================================
-
-【sing-box 订阅链接】（安卓客户端使用）
-${SUB_URL}
-
-【配置文件直链】（浏览器下载）
-${SUB_HTTP_URL}
-
-【二维码导入】
-安卓 sing-box 客户端可直接扫描二维码导入
-
-EOF
-
-    # 如果有 qrencode，添加二维码到信息文件
-    if [ -f "${SING_BOX_DIR}/sub_qr.txt" ]; then
-        cat "${SING_BOX_DIR}/sub_qr.txt" >> "${SING_BOX_DIR}/sub_info.txt"
-    fi
-    
-    cat >> "${SING_BOX_DIR}/sub_info.txt" <<EOF
-
-【使用说明】
-1. 安卓 sing-box 客户端：扫描二维码或粘贴订阅链接
-2. 其他客户端：下载 client.json 配置文件
-3. 访问日志：${SING_BOX_DIR}/access.log
-
-【查看配置】
-cat ${SING_BOX_DIR}/client.json
-
-========================================
-EOF
-
-    # 创建订阅服务脚本
-    cat > "${SING_BOX_DIR}/sub-server.py" <<'PYEOF'
-#!/usr/bin/env python3
-import http.server
-import socketserver
-import os
-import sys
-import time
-from datetime import datetime
-
-PORT = 8080
-TOKEN = sys.argv[1] if len(sys.argv) > 1 else "default"
-CONFIG_DIR = "/etc/sing-box"
-ACCESS_LOG = f"{CONFIG_DIR}/access.log"
-
-# 访问限制配置
-MAX_REQUESTS_PER_MIN = 30  # 每分钟最大请求数
-BLOCK_DURATION = 300       # 封禁时长（秒）
-request_history = {}       # IP -> [(timestamp, count)]
-blocked_ips = {}           # IP -> unblock_time
-
-def check_rate_limit(client_ip):
-    """检查并更新访问频率限制"""
-    now = time.time()
-    
-    # 检查是否被封禁
-    if client_ip in blocked_ips:
-        if now < blocked_ips[client_ip]:
-            return False, f"IP blocked, retry after {int(blocked_ips[client_ip] - now)}s"
-        else:
-            del blocked_ips[client_ip]
-    
-    # 清理过期记录
-    if client_ip in request_history:
-        request_history[client_ip] = [t for t in request_history[client_ip] if now - t < 60]
-    else:
-        request_history[client_ip] = []
-    
-    # 检查频率
-    if len(request_history[client_ip]) >= MAX_REQUESTS_PER_MIN:
-        blocked_ips[client_ip] = now + BLOCK_DURATION
-        return False, "Rate limit exceeded, IP blocked for 5 minutes"
-    
-    request_history[client_ip].append(now)
-    return True, "OK"
-
-def log_access(client_ip, path, status):
-    """记录访问日志"""
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    with open(ACCESS_LOG, "a") as f:
-        f.write(f"{timestamp} - {client_ip} - {path} - {status}\n")
-
-class SubHandler(http.server.SimpleHTTPRequestHandler):
-    def do_GET(self):
-        client_ip = self.client_address[0]
-        
-        # 检查频率限制
-        allowed, msg = check_rate_limit(client_ip)
-        if not allowed:
-            self.send_response(429)
-            self.end_headers()
-            self.wfile.write(f'{{"error": "{msg}"}}'.encode())
-            log_access(client_ip, self.path, "429")
-            return
-        
-        # 订阅链接 /token - 返回配置文件
-        if self.path == f"/{TOKEN}" or self.path == f"/{TOKEN}/":
-            self.send_response(200)
-            self.send_header('Content-type', 'application/json')
-            self.send_header('Cache-Control', 'no-cache')
-            self.send_header('X-RateLimit-Limit', str(MAX_REQUESTS_PER_MIN))
-            self.end_headers()
-            try:
-                with open(f"{CONFIG_DIR}/client.json", "rb") as f:
-                    self.wfile.write(f.read())
-                log_access(client_ip, self.path, "200")
-            except:
-                self.wfile.write(b'{"error": "config not found"}')
-                log_access(client_ip, self.path, "404")
-            return
-        
-        # 处理 sing-box 订阅格式 /token/client.json
-        if self.path == f"/{TOKEN}/client.json":
-            self.send_response(200)
-            self.send_header('Content-type', 'application/json')
-            self.send_header('Cache-Control', 'no-cache')
-            self.send_header('X-RateLimit-Limit', str(MAX_REQUESTS_PER_MIN))
-            self.end_headers()
-            try:
-                with open(f"{CONFIG_DIR}/client.json", "rb") as f:
-                    self.wfile.write(f.read())
-                log_access(client_ip, self.path, "200")
-            except:
-                self.wfile.write(b'{"error": "config not found"}')
-                log_access(client_ip, self.path, "404")
-            return
-        
-        # 二维码图片 /token/qr.png
-        if self.path == f"/{TOKEN}/qr.png":
-            self.send_response(200)
-            self.send_header('Content-type', 'image/png')
-            self.send_header('Content-Disposition', 'inline; filename="qr.png"')
-            self.end_headers()
-            try:
-                with open(f"{CONFIG_DIR}/sub_qr.png", "rb") as f:
-                    self.wfile.write(f.read())
-                log_access(client_ip, self.path, "200")
-            except:
-                self.send_response(404)
-                self.end_headers()
-                self.wfile.write(b'QR code not found')
-                log_access(client_ip, self.path, "404")
-            return
-        
-        # 404
-        self.send_response(404)
-        self.end_headers()
-        self.wfile.write(b'Not Found')
-        log_access(client_ip, self.path, "404")
-    
-    def log_message(self, format, *args):
-        pass  # 静默日志（使用自定义日志）
-
-if __name__ == "__main__":
-    with socketserver.TCPServer(("", PORT), SubHandler) as httpd:
-        print(f"Subscription server running on port {PORT}")
-        httpd.serve_forever()
-PYEOF
-
-    chmod +x "${SING_BOX_DIR}/sub-server.py"
-    
-    # 创建 systemd 服务
-    cat > /etc/systemd/system/sing-box-sub.service <<EOF
-[Unit]
-Description=sing-box subscription server
-After=network.target
-
-[Service]
-Type=simple
-User=root
-WorkingDirectory=${SING_BOX_DIR}
-ExecStart=/usr/bin/python3 ${SING_BOX_DIR}/sub-server.py ${SUB_TOKEN}
-Restart=always
-RestartSec=5
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
-    systemctl daemon-reload
-    systemctl enable sing-box-sub
-    
-    # 默认不启动订阅服务，需要时手动开启
-    systemctl stop sing-box-sub 2>/dev/null || true
-    
-    # 开放 8080 端口
-    if command -v ufw &>/dev/null && ufw status | grep -q "active"; then
-        ufw allow 8080/tcp >/dev/null 2>&1
-    fi
-    if command -v firewall-cmd &>/dev/null; then
-        firewall-cmd --permanent --add-port=8080/tcp >/dev/null 2>&1
-        firewall-cmd --reload >/dev/null 2>&1
-    fi
-    iptables -I INPUT -p tcp --dport 8080 -j ACCEPT 2>/dev/null
-    
-    info "订阅服务已配置（默认关闭）"
-    echo -e "${CYAN}"
-    echo "========================================"
-    echo "         客户端配置导入方式"
-    echo "========================================"
-    echo ""
-    echo "【方式1】手动复制配置（推荐）"
-    echo "scp root@${SERVER_IP}:/etc/sing-box/client.json ./"
-    echo ""
-    echo "【方式2】开启订阅服务（临时）"
-    echo "运行脚本，选择菜单选项 11 开启"
-    echo "开启后可以使用二维码或订阅链接导入"
-    echo "导入完成后记得选择选项 12 关闭"
-    echo ""
-    echo "【方式3】查看二维码文本"
-    echo "cat /etc/sing-box/sub_qr.txt"
-    echo ""
-    echo "========================================"
-    echo -e "${PLAIN}"
-    warn "为保护配置安全，订阅服务默认关闭，需要时手动开启"
 }
 
 # ──────────────────────────────────────────
@@ -989,12 +739,6 @@ enable_bbr() {
 #  主菜单
 # ──────────────────────────────────────────
 show_menu() {
-    # 检查订阅服务状态
-    local sub_status="${RED}已关闭${PLAIN}"
-    if systemctl is-active --quiet sing-box-sub 2>/dev/null; then
-        sub_status="${GREEN}运行中${PLAIN}"
-    fi
-    
     echo -e "\n${BLUE}╔══════════════════════════════════════════╗${PLAIN}"
     echo -e "${BLUE}║     sing-box 服务端一键管理脚本          ║${PLAIN}"
     echo -e "${BLUE}╠══════════════════════════════════════════╣${PLAIN}"
@@ -1008,14 +752,10 @@ show_menu() {
     echo -e "${BLUE}║  ${YELLOW}7.${PLAIN} 重启 sing-box                       ${BLUE}║${PLAIN}"
     echo -e "${BLUE}║  ${YELLOW}8.${PLAIN} 查看实时日志                        ${BLUE}║${PLAIN}"
     echo -e "${BLUE}║  ${YELLOW}9.${PLAIN} 更新 sing-box 到最新版              ${BLUE}║${PLAIN}"
-    echo -e "${BLUE}║  ${CYAN}10.${PLAIN} 查看订阅访问日志                   ${BLUE}║${PLAIN}"
-    echo -e "${BLUE}╠══════════════════════════════════════════╣${PLAIN}"
-    echo -e "${BLUE}║  ${GREEN}11.${PLAIN} 开启订阅服务 (${sub_status})          ${BLUE}║${PLAIN}"
-    echo -e "${BLUE}║  ${RED}12.${PLAIN} 关闭订阅服务                        ${BLUE}║${PLAIN}"
     echo -e "${BLUE}╠══════════════════════════════════════════╣${PLAIN}"
     echo -e "${BLUE}║  ${RED}0.${PLAIN} 卸载 sing-box                       ${BLUE}║${PLAIN}"
     echo -e "${BLUE}╚══════════════════════════════════════════╝${PLAIN}"
-    echo -ne "  请输入选项 [0-12]: "
+    echo -ne "  请输入选项 [0-9]: "
 }
 
 do_install() {
@@ -1055,46 +795,13 @@ do_install() {
     fi
 }
 
-# ──────────────────────────────────────────
-#  订阅服务开关
-# ──────────────────────────────────────────
-start_sub_service() {
-    if [[ ! -f "${SING_BOX_DIR}/sub-server.py" ]]; then
-        error "未找到订阅服务，请先安装 sing-box"
-        return
-    fi
-    
-    systemctl start sing-box-sub 2>/dev/null
-    if systemctl is-active --quiet sing-box-sub; then
-        info "订阅服务已开启"
-        echo -e "${CYAN}"
-        cat "${SING_BOX_DIR}/sub_info.txt" 2>/dev/null || echo "订阅信息: ${SING_BOX_DIR}/sub_info.txt"
-        echo -e "${PLAIN}"
-        warn "配置导入完成后，建议使用菜单选项 12 关闭订阅服务"
-    else
-        error "订阅服务启动失败"
-    fi
-}
-
-stop_sub_service() {
-    systemctl stop sing-box-sub 2>/dev/null
-    if ! systemctl is-active --quiet sing-box-sub 2>/dev/null; then
-        info "订阅服务已关闭"
-        echo -e "${GREEN}✓ 订阅服务已安全关闭，配置不再暴露${PLAIN}"
-    else
-        error "订阅服务关闭失败"
-    fi
-}
-
 do_uninstall() {
     if ! confirm "确认卸载 sing-box？配置将全部删除"; then
         return
     fi
     systemctl stop sing-box 2>/dev/null || true
-    systemctl stop sing-box-sub 2>/dev/null || true
     systemctl disable sing-box 2>/dev/null || true
-    systemctl disable sing-box-sub 2>/dev/null || true
-    rm -f "${SING_BOX_BIN}" "${SING_BOX_SERVICE}" /etc/systemd/system/sing-box-sub.service
+    rm -f "${SING_BOX_BIN}" "${SING_BOX_SERVICE}"
     rm -rf "${SING_BOX_DIR}"
     systemctl daemon-reload
     info "sing-box 已卸载完毕"
@@ -1112,8 +819,6 @@ main() {
         hy2|hysteria2) do_install config_hysteria2 udp; exit 0 ;;
         tuic)          do_install config_tuic udp; exit 0 ;;
         ss|shadowsocks) do_install config_shadowsocks tcp; exit 0 ;;
-        sub-on|start)  start_sub_service; exit 0 ;;
-        sub-off|stop)  stop_sub_service; exit 0 ;;
     esac
 
     while true; do
@@ -1135,17 +840,6 @@ main() {
                 systemctl start sing-box
                 info "更新完成"
                 ;;
-            10) 
-                if [[ -f "${SING_BOX_DIR}/access.log" ]]; then
-                    echo -e "${CYAN}════════════ 订阅访问日志（最近20条）════════════${PLAIN}"
-                    tail -20 "${SING_BOX_DIR}/access.log"
-                    echo -e "${CYAN}══════════════════════════════════════════════════${PLAIN}"
-                else
-                    warn "暂无访问日志"
-                fi
-                ;;
-            11) start_sub_service ;;
-            12) stop_sub_service ;;
             0) do_uninstall ;;
             *) warn "无效选项" ;;
         esac
